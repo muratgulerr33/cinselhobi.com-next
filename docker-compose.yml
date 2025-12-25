@@ -1,0 +1,18 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: cinselhobi_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cinselhobi
+      POSTGRES_PASSWORD: cinselhobi
+      POSTGRES_DB: cinselhobi
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
