@@ -38,7 +38,20 @@ docker compose ps
 npm install
 ```
 
-### 4. Development Server'ı Başlatma
+### 4. Adım 2: Drizzle ORM Kurulumu ve Migration
+
+Drizzle ORM ve PostgreSQL bağlantısını kurmak için:
+
+```bash
+npm i drizzle-orm pg
+npm i -D drizzle-kit dotenv tsx
+npm run db:generate
+npm run db:migrate
+```
+
+**Not:** `DATABASE_URL` değişkeninin `.env.local` (veya `.env`) dosyasında tanımlı olduğundan emin olun.
+
+### 5. Development Server'ı Başlatma
 
 ```bash
 npm run dev
@@ -50,17 +63,21 @@ Uygulama `http://localhost:3000` adresinde çalışacaktır.
 
 Ortam değişkenlerini yapılandırmak için:
 
-1. `.env.example` dosyasını `.env.local` olarak kopyalayın:
+1. Proje kök dizininde `.env.local` dosyası oluşturun (veya `.env` dosyası kullanabilirsiniz):
 
 ```bash
-cp .env.example .env.local
+touch .env.local
 ```
 
 2. `.env.local` dosyasını düzenleyip gerçek değerleri girin:
-   - `DATABASE_URL`: Veritabanı bağlantı string'i (docker-compose.yml'deki varsayılan değerler kullanılabilir)
+   - `DATABASE_URL`: Veritabanı bağlantı string'i (zorunlu - Drizzle migrate için gereklidir)
+     - Örnek format: `postgresql://kullanici:sifre@localhost:5432/veritabani_adi`
+     - Docker Compose ile çalışıyorsanız: `postgresql://postgres:postgres@localhost:5432/cinselhobi`
    - `WOO_BASE_URL`: WooCommerce sitenizin URL'i
    - `WOO_CONSUMER_KEY`: WooCommerce Consumer Key
    - `WOO_CONSUMER_SECRET`: WooCommerce Consumer Secret
+
+**Not:** `npm run db:migrate` komutunu çalıştırmadan önce `DATABASE_URL` değişkeninin `.env.local` veya `.env` dosyasında tanımlı olduğundan emin olun.
 
 ## Sorun Giderme
 
@@ -85,8 +102,83 @@ Container loglarını kontrol edin:
 docker compose logs postgres
 ```
 
+## WooCommerce Import
+
+### WooCommerce API Key Oluşturma
+
+WooCommerce REST API key'lerini oluşturmak için:
+
+1. WordPress admin paneline giriş yapın
+2. **WooCommerce** → **Settings** → **Advanced** → **REST API** bölümüne gidin
+3. **Add key** butonuna tıklayın
+4. Key için bir açıklama girin (örn: "Import Script")
+5. **Read** yetkisini seçin
+6. **Generate API key** butonuna tıklayın
+7. Oluşturulan **Consumer Key** ve **Consumer Secret** değerlerini kopyalayın
+
+### Import İşlemi
+
+WooCommerce verilerini çekmek ve veritabanına aktarmak için:
+
+1. `.env.local` dosyasına aşağıdaki değerleri ekleyin (DATABASE_URL zaten mevcut olmalı):
+
+```env
+WOO_BASE_URL="https://cinselhobi.com"
+WOO_CONSUMER_KEY="ck_..."
+WOO_CONSUMER_SECRET="cs_..."
+```
+
+2. Docker container'ını başlatın (eğer çalışmıyorsa):
+
+```bash
+docker compose up -d
+```
+
+3. Import script'ini çalıştırın:
+
+**Full Import (tüm ürünler - varsayılan):**
+```bash
+npm run woo:import
+```
+
+veya açıkça belirtmek için:
+```bash
+WOO_IMPORT_MODE=full npm run woo:import
+```
+
+**Sample Import (sadece ilk N ürün - geliştirme/test için):**
+```bash
+WOO_IMPORT_MODE=sample WOO_IMPORT_LIMIT=20 npm run woo:import
+```
+
+Script şunları yapacaktır:
+- WooCommerce API'den kategorileri ve ürünleri çeker
+- `data/snapshots/<mode>/` klasörüne JSON snapshot'ları kaydeder (`full` veya `sample`)
+- Veritabanına idempotent şekilde yazar (upsert)
+
+**Notlar:**
+- Varsayılan olarak sadece yayında olan ürünler (`status=publish`) import edilir. Tüm ürünleri (draft, pending, private vb.) import etmek için `.env.local` dosyasına `WOO_PRODUCT_STATUS=any` ekleyebilirsiniz.
+- Sample mod geliştirme ve test için kullanılır. Canlı WooCommerce'e dokunmadan küçük bir veri seti ile çalışmanızı sağlar.
+- Kategoriler her zaman tam olarak çekilir (az sayıda oldukları için).
+- `woo:import` scripti ortam değişkenlerini önce `.env.local`, sonra `.env` dosyasından okur.
+- Eğer 401 (Unauthorized) hatası alırsanız, `.env.local` dosyasına `WOO_AUTH_MODE=query` ekleyip tekrar deneyin. Bu durumda authentication query parametreleri ile yapılır (Basic Auth header yerine).
+
+### Import Sonrası Kontrol
+
+Import işlemi tamamlandıktan sonra veritabanındaki kayıt sayılarını kontrol edebilirsiniz:
+
+```bash
+# Ürün sayısı
+docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(*) from products;"
+
+# Kategori sayısı
+docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(*) from categories;"
+```
+
 ## Notlar
 
-- Bu adımda (Adım 1) Drizzle ORM, veritabanı şeması ve migration'lar henüz eklenmemiştir. Bunlar Adım 2'de eklenecektir.
 - Veritabanı verileri Docker volume'unda (`pgdata`) saklanır. Container silinse bile veriler korunur.
+- Drizzle ORM kullanılmaktadır. Prisma kullanılmamaktadır.
+- TypeScript için `pg` modülü tipleri `@types/pg` devDependency olarak eklenmiştir.
+- Snapshot dosyaları `data/snapshots/` klasöründe saklanır ve `.gitignore`'a eklenmiştir (büyük olabilir ve gizli veri içerebilir).
 
