@@ -16,7 +16,7 @@ Bu proje, WooCommerce tabanlı bir e-ticaret sitesinin modern bir Next.js uygula
 
 ### Hedef Dışı
 - [ ] Prisma ORM kullanımı (Drizzle tercih ediliyor)
-- [ ] Serverless veya cloud platform entegrasyonu
+- [ ] VPS dışı yönetilen platform kullanımı
 - [ ] Desktop öncelikli tasarım
 - [ ] WooCommerce'in direkt kullanımı (sadece veri taşıma)
 - [ ] Hızlı prototipleme veya MVP'den önce özellik ekleme
@@ -63,31 +63,44 @@ Bu proje, WooCommerce tabanlı bir e-ticaret sitesinin modern bir Next.js uygula
 
 ```
 /
-├── app/                    # Next.js App Router sayfaları
-│   ├── (routes)/          # Route grupları
-│   ├── api/               # API routes
-│   └── layout.tsx         # Root layout
-├── components/            # React bileşenleri
-│   ├── ui/               # Temel UI bileşenleri
-│   └── features/         # Özellik bazlı bileşenler
-├── lib/                  # Yardımcı fonksiyonlar
-│   ├── db/               # Drizzle setup ve queries
-│   └── utils/            # Genel yardımcılar
-├── data/                 # Veri dosyaları
-│   └── snapshots/        # WooCommerce snapshot'ları
-├── drizzle/              # Drizzle schema ve migrations
-│   ├── schema.ts
-│   └── migrations/
+├── src/
+│   ├── app/              # Next.js App Router sayfaları
+│   │   ├── globals.css   # Global CSS dosyası
+│   │   ├── layout.tsx    # Root layout
+│   │   └── page.tsx      # Ana sayfa
+│   └── db/               # Drizzle veritabanı katmanı
+│       ├── schema.ts     # Drizzle şema tanımları
+│       └── connection.ts # Veritabanı bağlantı yapılandırması
+├── drizzle/              # Drizzle migration çıktıları
+│   ├── 0000_*.sql        # Migration SQL dosyaları
+│   └── meta/             # Migration metadata
 ├── public/               # Statik dosyalar
-├── scripts/              # Utility scriptler
-│   └── import.ts         # WooCommerce import scripti
+├── docs/                 # Dokümantasyon
 ├── .env.example          # Ortam değişkenleri şablonu
 ├── docker-compose.yml    # Local PostgreSQL
 ├── drizzle.config.ts     # Drizzle yapılandırması
-├── next.config.js        # Next.js yapılandırması
+├── next.config.ts        # Next.js yapılandırması
+├── eslint.config.mjs     # ESLint yapılandırması
+├── postcss.config.mjs    # PostCSS yapılandırması
 ├── package.json
-├── tailwind.config.js    # Tailwind yapılandırması
 └── tsconfig.json         # TypeScript yapılandırması
+```
+
+### Planlanan Yapı
+
+Aşağıdaki klasörler henüz oluşturulmamıştır, ilerleyen adımlarda eklenecektir:
+
+```
+├── src/
+│   ├── components/       # React bileşenleri (Planlanan)
+│   │   ├── ui/          # Temel UI bileşenleri
+│   │   └── features/    # Özellik bazlı bileşenler
+│   └── lib/             # Yardımcı fonksiyonlar (Planlanan)
+│       └── utils/       # Genel yardımcılar
+├── data/                # Veri dosyaları (Planlanan)
+│   └── snapshots/       # WooCommerce snapshot'ları
+└── scripts/             # Utility scriptler (Planlanan)
+    └── import.ts        # WooCommerce import scripti
 ```
 
 ## 7) Ortam Değişkenleri (ENV)
@@ -96,23 +109,26 @@ Bu proje, WooCommerce tabanlı bir e-ticaret sitesinin modern bir Next.js uygula
 
 ```env
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/cinselhobi
+DATABASE_URL=postgres://cinselhobi:cinselhobi@localhost:5432/cinselhobi
 
-# Next.js
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
-
-# Production (sunucuda doldurulacak)
-# DATABASE_URL=postgresql://user:password@localhost:5432/cinselhobi_prod
-# NEXT_PUBLIC_APP_URL=https://cinselhobi.com
+# WooCommerce REST API
+WOO_BASE_URL=https://example.com
+WOO_CONSUMER_KEY=ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+WOO_CONSUMER_SECRET=cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+**Önemli Notlar:**
+- **Drizzle migrate için zorunlu:** `DATABASE_URL` değişkeni `.env.local` dosyasında tanımlı olmalıdır. Aksi halde `npm run db:migrate` komutu hata verecektir.
+- **Drizzle config okuma sırası:** `drizzle.config.ts` dosyası önce `.env.local` dosyasını okur, eğer bulamazsa `.env` dosyasını okur.
+- **Gitignore:** `.env` ve `.env.local` dosyaları `.gitignore` içinde olmalıdır ve versiyon kontrolüne eklenmemelidir.
+- Production ortamında bu değişkenler sunucuda uygun şekilde ayarlanmalıdır.
 
 ## 8) Local Kurulum Checklist (Mac)
 
 ### Next.js Kurulum
 
 ```bash
-# Node.js 18+ kurulu olmalı
+# Node.js güncel LTS sürümü kurulu olmalı
 node --version
 
 # Proje bağımlılıklarını kur
@@ -126,13 +142,16 @@ npm run dev
 
 ```bash
 # Docker Compose ile PostgreSQL'i başlat
-docker-compose up -d
+docker compose up -d
 
 # PostgreSQL'in çalıştığını kontrol et
-docker-compose ps
+docker compose ps
 
 # PostgreSQL'e bağlan (opsiyonel)
-docker-compose exec postgres psql -U user -d cinselhobi
+docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi
+
+# PostgreSQL loglarını görüntüle
+docker logs cinselhobi_db --tail 50
 ```
 
 ### Drizzle Migrate Akışı
@@ -142,11 +161,13 @@ docker-compose exec postgres psql -U user -d cinselhobi
 npm run db:generate
 
 # Migration'ları veritabanına uygula
+# ÖNEMLİ: DATABASE_URL .env.local (veya .env) dosyasında tanımlı olmalıdır
 npm run db:migrate
-
-# (Opsiyonel) Veritabanı durumunu kontrol et
-npm run db:studio
 ```
+
+**Önemli Notlar:**
+- `npm run db:migrate` komutu çalıştırılmadan önce `.env.local` (veya `.env`) dosyasında `DATABASE_URL` değişkeni tanımlı olmalıdır. Aksi halde komut hata verecektir.
+- Migration dosyaları `drizzle/` klasörü altında oluşturulur (örn: `drizzle/0000_curly_mandroid.sql`).
 
 ## 9) Veri Taşıma Planı (WooCommerce -> Snapshot -> PostgreSQL)
 
@@ -161,10 +182,14 @@ npm run db:studio
 ```
 data/snapshots/
 ├── categories.json
-├── products.json
+├── products_page_001.json
+├── products_page_002.json
+├── ... (pagination ile sayfa sayfa çekilen ürün dosyaları)
 ├── product_categories.json
 └── images.json
 ```
+
+**Not:** WooCommerce REST API'den veri çekilirken pagination kullanılır. Her sayfa ayrı bir JSON dosyası olarak kaydedilir (örn: `products_page_001.json`, `products_page_002.json`).
 
 ### Import Prensipleri
 - **Pagination**: WooCommerce API'den sayfa sayfa veri çekme
@@ -241,11 +266,11 @@ data/snapshots/
 Tokenlar geldiğinde yapılacaklar:
 
 1. **CSS Variables Yaklaşımı:**
-   - `app/globals.css` içinde CSS custom properties tanımlanır
+   - `src/app/globals.css` içinde CSS custom properties tanımlanır
    - Tokenlar (renkler, spacing, typography) CSS variables'a dönüştürülür
 
 2. **Tailwind Config Entegrasyonu:**
-   - `tailwind.config.js` içinde `theme.extend` kullanılır
+   - Tailwind yapılandırması içinde `theme.extend` kullanılır
    - CSS variables Tailwind theme değerlerine map edilir
    - Örnek: `colors.primary` → `var(--color-primary)`
 
@@ -256,7 +281,7 @@ Tokenlar geldiğinde yapılacaklar:
 ## 13) Prod Deploy Planı (Kamatera)
 
 ### Sunucuda Gereksinimler
-- Node.js 18+ kurulu
+- Node.js güncel LTS sürümü kurulu
 - PostgreSQL servis çalışıyor
 - PM2 global olarak kurulu (`npm install -g pm2`)
 - Nginx kurulu ve çalışıyor
@@ -327,10 +352,11 @@ SSL için Let's Encrypt kullanılabilir.
 
 **Çalıştırılacak komutlar:**
 ```bash
+# Eğer sıfırdan başlıyorsak:
 npx create-next-app@latest . --typescript --tailwind --app
-npm install drizzle-orm pg
-npm install -D drizzle-kit @types/pg
-docker-compose up -d
+
+# Docker Compose ile PostgreSQL'i başlat
+docker compose up -d
 ```
 
 **Bitti kriteri:**
@@ -339,45 +365,63 @@ docker-compose up -d
 - [ ] `.env.example` dosyası mevcut
 - [ ] `README.md` local kurulum adımlarını içeriyor
 
-### Adım 2: Drizzle + Schema + Migrations
+### Adım 2: Drizzle Kurulumu + Schema + Migrations
 
-**Amaç:** Veritabanı şemasını tanımla, migration'ları oluştur ve uygula.
+**Amaç:** Drizzle ORM'i kur, veritabanı şemasını tanımla, migration'ları oluştur ve uygula.
 
 **Çıktılar:**
-- `drizzle/schema.ts` dosyası (categories, products, product_categories tabloları)
+- Drizzle paketleri kurulmuş
+- `src/db/schema.ts` dosyası (categories, products, product_categories tabloları)
 - `drizzle.config.ts` yapılandırması
-- İlk migration dosyası
+- İlk migration dosyası (`drizzle/0000_*.sql`)
 - Veritabanında tablolar oluşturulmuş
 
 **Çalıştırılacak komutlar:**
 ```bash
+# Drizzle paketlerini kur
+npm install drizzle-orm pg
+npm install -D drizzle-kit@0.31.8 @types/pg
+
+# .env.local dosyasını oluştur ve DATABASE_URL ekle
+# DATABASE_URL=postgresql://cinselhobi:cinselhobi@localhost:5432/cinselhobi
+
+# Schema değişikliklerinden migration oluştur
 npm run db:generate
+
+# Migration'ları veritabanına uygula (DATABASE_URL .env.local'de olmalı)
 npm run db:migrate
+
+# Build testi yap
+npm run build
 ```
 
 **Bitti kriteri:**
-- [ ] Schema dosyası kategoriler, ürünler ve ilişki tablolarını içeriyor
+- [ ] Drizzle paketleri kuruldu (drizzle-kit@0.31.8 sürümü sabitlendi)
+- [ ] Schema dosyası `src/db/schema.ts` konumunda ve kategoriler, ürünler ve ilişki tablolarını içeriyor
+- [ ] `.env.local` dosyasında `DATABASE_URL` tanımlı
 - [ ] Migration başarıyla uygulandı
 - [ ] Veritabanında tablolar mevcut
+- [ ] Build testi başarılı (`npm run build` hatasız çalışıyor)
 
-### Adım 3: Import Script + Snapshot + DB Dolumu
+### Adım 3: Woo REST API -> Snapshot -> Postgres Import
 
-**Amaç:** WooCommerce verilerini snapshot olarak kaydet, PostgreSQL'e import et.
+**Amaç:** WooCommerce REST API'den verileri çek, snapshot olarak kaydet, PostgreSQL'e import et.
 
 **Çıktılar:**
 - `scripts/import.ts` scripti hazır
-- `data/snapshots/` klasöründe JSON dosyaları
+- `data/snapshots/` klasöründe JSON dosyaları (pagination ile: `products_page_001.json`, `products_page_002.json` vb.)
 - Veritabanı verilerle dolu
 
 **Çalıştırılacak komutlar:**
 ```bash
+# Import scriptini çalıştır
 npm run import
 # veya
 tsx scripts/import.ts
 ```
 
 **Bitti kriteri:**
-- [ ] Snapshot dosyaları oluşturuldu
+- [ ] Snapshot dosyaları oluşturuldu (pagination ile sayfa sayfa)
 - [ ] Veritabanında kategoriler ve ürünler mevcut
 - [ ] Import script idempotent çalışıyor (tekrar çalıştırılabilir)
 
@@ -458,6 +502,26 @@ pm2 start npm --name "cinselhobi" -- start
 ## Sonraki Adım: Cursor Prompt #1
 
 ```
-Adım 1'i uygula: Next.js proje iskeletini oluştur, TypeScript ve Tailwind CSS ile. Docker Compose ile PostgreSQL container'ı hazırla. .env.example dosyasını oluştur ve gerekli ortam değişkenlerini ekle. README.md dosyasını local kurulum adımlarını içerecek şekilde güncelle. Proje kök dizininde gerekli klasör yapısını oluştur (app/, components/, lib/, data/snapshots/, drizzle/, scripts/).
+Adım 1'i uygula: Next.js proje iskeletini oluştur, TypeScript ve Tailwind CSS ile. Docker Compose ile PostgreSQL container'ı hazırla. .env.example dosyasını oluştur ve gerekli ortam değişkenlerini ekle (DATABASE_URL, WOO_BASE_URL, WOO_CONSUMER_KEY, WOO_CONSUMER_SECRET). README.md dosyasını local kurulum adımlarını içerecek şekilde güncelle.
 ```
+
+---
+
+## Değişiklik Özeti
+
+Bu doküman mevcut repo gerçeklerine %100 uyumlu hale getirilmiştir:
+
+1. **Docker komutları:** Tüm örneklerde `docker compose` (boşluklu) formatı kullanıldı. PostgreSQL log görüntüleme komutu eklendi.
+
+2. **ENV yapılandırması:** `.env.example` içeriği birebir listelendi (DATABASE_URL, WOO_BASE_URL, WOO_CONSUMER_KEY, WOO_CONSUMER_SECRET). Drizzle migrate için `.env.local` zorunluluğu ve `drizzle.config.ts`'nin okuma sırası (.env.local → .env) açıkça belirtildi. Gitignore notu eklendi.
+
+3. **Drizzle scripts:** `db:generate` ve `db:migrate` komutları doğru şekilde belirtildi (generate:pg / migrate:pg gibi ifadeler kaldırıldı).
+
+4. **İş sırası güncellemeleri:** Adım 2'de drizzle-kit@0.31.8 sürüm sabitleme notu ve `npm run build` build testi eklendi.
+
+5. **Yasaklı kelimeler:** "sunucusuz model" ifadesi kaldırıldı. Vercel/Netlify ve "cloud" kelimeleri dokümanda bulunmuyordu, kontrol edildi.
+
+6. **Repo yolları:** Tüm yollar mevcut yapıya uygun (`src/app/...`, `src/db/...`, `drizzle.config.ts`, `drizzle/` klasörü).
+
+7. **Dosya isimleri:** Mevcut dosya isimleri dokümana geçirildi (eslint.config.mjs, postcss.config.mjs, next.config.ts, docker-compose.yml).
 
