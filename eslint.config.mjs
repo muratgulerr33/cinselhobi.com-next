@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Archive klasörü ignore edilmeli
+    "archive/**",
+    // Generated files
+    "mcp-server/dist/**",
   ]),
 ]);
 

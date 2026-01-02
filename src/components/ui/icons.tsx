@@ -1,0 +1,36 @@
+import {
+  Menu,
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ShoppingBag,
+  Heart,
+  User,
+  MoreHorizontal,
+  Loader2,
+  Home,
+  LayoutGrid,
+  Trash2,
+  Share2,
+} from "lucide-react";
+
+export const Icons = {
+  menu: Menu,
+  search: Search,
+  close: X,
+  back: ChevronLeft,
+  forward: ChevronRight,
+  down: ChevronDown,
+  cart: ShoppingBag,
+  heart: Heart,
+  user: User,
+  more: MoreHorizontal,
+  spinner: Loader2,
+  home: Home,
+  grid: LayoutGrid,
+  trash: Trash2,
+  share: Share2,
+} as const;
+
