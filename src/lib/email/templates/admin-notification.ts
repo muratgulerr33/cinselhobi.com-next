@@ -1,7 +1,8 @@
 /**
  * Admin'e yeni sipariş bildirimi email template'i
  */
-export function getAdminNotificationEmailHtml(data: {
+
+export interface AdminNotificationData {
   orderId: string;
   customerName: string;
   customerEmail: string;
@@ -10,7 +11,23 @@ export function getAdminNotificationEmailHtml(data: {
   totalAmount: number;
   paymentMethod: "credit_card" | "cod";
   orderLink: string;
-}): string {
+}
+
+// Yeni template standardı: subject, html, text export'ları
+export function subject(data: AdminNotificationData): string {
+  return `[CinselHobi] Yeni Sipariş - #${data.orderId}`;
+}
+
+export function html(data: AdminNotificationData): string {
+  return getAdminNotificationEmailHtml(data);
+}
+
+export function text(data: AdminNotificationData): string {
+  return getAdminNotificationEmailText(data);
+}
+
+// Eski export'lar (geriye dönük uyumluluk için korunuyor)
+export function getAdminNotificationEmailHtml(data: AdminNotificationData): string {
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("tr-TR", {
       style: "currency",
@@ -83,16 +100,7 @@ export function getAdminNotificationEmailHtml(data: {
   `.trim();
 }
 
-export function getAdminNotificationEmailText(data: {
-  orderId: string;
-  customerName: string;
-  customerEmail: string;
-  orderDate: string;
-  items: Array<{ name: string; quantity: number; price: number }>;
-  totalAmount: number;
-  paymentMethod: "credit_card" | "cod";
-  orderLink: string;
-}): string {
+export function getAdminNotificationEmailText(data: AdminNotificationData): string {
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("tr-TR", {
       style: "currency",

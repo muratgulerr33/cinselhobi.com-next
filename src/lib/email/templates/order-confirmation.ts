@@ -1,7 +1,8 @@
 /**
  * Müşteriye sipariş onay email'i template'i
  */
-export function getOrderConfirmationEmailHtml(data: {
+
+export interface OrderConfirmationData {
   orderId: string;
   customerName: string;
   orderDate: string;
@@ -16,7 +17,23 @@ export function getOrderConfirmationEmailHtml(data: {
   };
   paymentMethod: "credit_card" | "cod";
   orderLink: string;
-}): string {
+}
+
+// Yeni template standardı: subject, html, text export'ları
+export function subject(data: OrderConfirmationData): string {
+  return `[CinselHobi] Siparişiniz Alındı (#${data.orderId})`;
+}
+
+export function html(data: OrderConfirmationData): string {
+  return getOrderConfirmationEmailHtml(data);
+}
+
+export function text(data: OrderConfirmationData): string {
+  return getOrderConfirmationEmailText(data);
+}
+
+// Eski export'lar (geriye dönük uyumluluk için korunuyor)
+export function getOrderConfirmationEmailHtml(data: OrderConfirmationData): string {
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("tr-TR", {
       style: "currency",
@@ -101,22 +118,7 @@ export function getOrderConfirmationEmailHtml(data: {
   `.trim();
 }
 
-export function getOrderConfirmationEmailText(data: {
-  orderId: string;
-  customerName: string;
-  orderDate: string;
-  items: Array<{ name: string; quantity: number; price: number }>;
-  totalAmount: number;
-  address: {
-    title: string;
-    fullAddress: string;
-    city: string;
-    district: string;
-    phone: string;
-  };
-  paymentMethod: "credit_card" | "cod";
-  orderLink: string;
-}): string {
+export function getOrderConfirmationEmailText(data: OrderConfirmationData): string {
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("tr-TR", {
       style: "currency",
