@@ -1,22 +1,6 @@
-import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-
 export default {
-  providers: [
-    Credentials({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      // authorize fonksiyonu auth.ts'de override edilecek
-      async authorize() {
-        return null;
-      },
-    }),
-  ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
   pages: {
     signIn: "/login",
@@ -24,14 +8,14 @@ export default {
     error: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "user" | "admin" | undefined;
@@ -39,5 +23,5 @@ export default {
       return session;
     },
   },
-} satisfies NextAuthConfig;
+};
 

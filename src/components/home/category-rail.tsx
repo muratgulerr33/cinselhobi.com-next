@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }

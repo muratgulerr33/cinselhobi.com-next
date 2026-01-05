@@ -18,55 +18,60 @@ if (!process.env.AUTH_SECRET) {
   console.warn("⚠️ Missing AUTH_SECRET");
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+// Override authorize fonksiyonu için provider'ı burada tanımla
+const credentialsProvider = Credentials({
+  name: "Credentials",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    password: { label: "Password", type: "password" },
+  },
+  async authorize(credentials) {
+    if (!credentials?.email || !credentials?.password) {
+      return null;
+    }
+
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, credentials.email as string))
+      .limit(1);
+
+    if (user.length === 0 || !user[0].passwordHash) {
+      return null;
+    }
+
+    const isValid = await argon2.verify(
+      user[0].passwordHash,
+      credentials.password as string
+    );
+
+    if (!isValid) {
+      return null;
+    }
+
+    return {
+      id: user[0].id,
+      email: user[0].email,
+      name: user[0].name,
+      image: user[0].image,
+      role: user[0].role ?? undefined,
+    };
+  },
+});
+
+const nextAuthConfig = {
   ...authConfig,
-  debug: true,
+  secret: process.env.AUTH_SECRET || "temp-secret-for-build",
+  debug: process.env.NODE_ENV === "development",
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  providers: [
-    Credentials({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+  providers: [credentialsProvider],
+};
 
-        const user = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email as string))
-          .limit(1);
-
-        if (user.length === 0 || !user[0].passwordHash) {
-          return null;
-        }
-
-        const isValid = await argon2.verify(
-          user[0].passwordHash,
-          credentials.password as string
-        );
-
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: user[0].id,
-          email: user[0].email,
-          name: user[0].name,
-          image: user[0].image,
-          role: user[0].role ?? undefined,
-        };
-      },
-    }),
-  ],
-});
+const nextAuth = NextAuth(nextAuthConfig);
+export const { handlers, signIn, signOut, auth } = nextAuth;
 
