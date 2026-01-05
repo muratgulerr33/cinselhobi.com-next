@@ -101,3 +101,4 @@ ${links.orderUrl ? `Siparişi görüntülemek için: ${links.orderUrl}` : ""}
   `.trim();
 }
 
+

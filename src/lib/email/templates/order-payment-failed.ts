@@ -72,3 +72,4 @@ ${links.supportUrl ? `Destek ile iletişime geçmek için: ${links.supportUrl}` 
   `.trim();
 }
 
+

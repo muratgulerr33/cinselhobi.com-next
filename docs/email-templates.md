@@ -345,3 +345,4 @@ src/lib/email/templates/
 - Logo URL'i opsiyoneldir. Sağlanmazsa text logo kullanılır.
 - Link'ler "Unknown" olarak bırakılabilir, bu durumda ilgili buton gösterilmez.
 
+

@@ -77,3 +77,4 @@ ${links.orderUrl ? `Sipariş detaylarını görüntülemek için: ${links.orderU
   `.trim();
 }
 
+

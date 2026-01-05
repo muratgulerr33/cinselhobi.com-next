@@ -55,3 +55,4 @@ ${verifyUrl !== "Unknown" ? `Doğrulama bağlantısı: ${verifyUrl}` : "Doğrula
   `.trim();
 }
 
+

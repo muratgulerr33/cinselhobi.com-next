@@ -71,3 +71,4 @@ ${links.supportUrl ? `Destek merkezine gitmek için: ${links.supportUrl}` : ""}
   `.trim();
 }
 
+

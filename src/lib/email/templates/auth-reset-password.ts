@@ -55,3 +55,4 @@ ${resetUrl !== "Unknown" ? `Şifre sıfırlama bağlantısı: ${resetUrl}` : "Ş
   `.trim();
 }
 
+

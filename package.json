@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "woo:import": "node --import tsx scripts/woo-import.ts"
+    "woo:import": "node --import tsx scripts/woo-import.ts",
+    "fix:categories": "node --import tsx scripts/fix-category-parent-duplications.ts",
+    "tree:categories": "node --import tsx scripts/print-category-tree.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

@@ -86,3 +86,4 @@ ${links.accountUrl ? `Hesabınıza gitmek için: ${links.accountUrl}` : ""}
   `.trim();
 }
 
+

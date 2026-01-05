@@ -86,3 +86,4 @@ ${links.supportUrl ? `Mesajı görüntülemek için: ${links.supportUrl}` : ""}
   `.trim();
 }
 
+
