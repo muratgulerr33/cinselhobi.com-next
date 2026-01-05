@@ -73,9 +73,21 @@ touch .env.local
    - `DATABASE_URL`: Veritabanı bağlantı string'i (zorunlu - Drizzle migrate için gereklidir)
      - Örnek format: `postgresql://kullanici:sifre@localhost:5432/veritabani_adi`
      - Docker Compose ile çalışıyorsanız: `postgresql://postgres:postgres@localhost:5432/cinselhobi`
+   - `AUTH_SECRET`: Auth.js için gizli anahtar (zorunlu - production için)
+     - Üretmek için: `openssl rand -base64 32` veya `npx auth secret`
+   - `AUTH_URL`: Uygulamanızın base URL'i (production için)
+     - Development için genellikle gerekmez: `http://localhost:3000`
    - `WOO_BASE_URL`: WooCommerce sitenizin URL'i
    - `WOO_CONSUMER_KEY`: WooCommerce Consumer Key
    - `WOO_CONSUMER_SECRET`: WooCommerce Consumer Secret
+   - `EMAIL_ENABLED`: Email gönderimini etkinleştirir (varsayılan: `true`)
+   - `SMTP_HOST`: SMTP sunucu adresi (varsayılan: `smile1.ixirdns.com`)
+   - `SMTP_PORT`: SMTP port (varsayılan: `587`)
+   - `SMTP_SECURE`: TLS kullanımı (varsayılan: `false` - 587 portu için)
+   - `SMTP_USER`: SMTP kullanıcı adı (örn: `destek@cinselhobi.com`)
+   - `SMTP_PASS`: SMTP şifresi
+   - `SMTP_FROM`: Gönderen email adresi (varsayılan: `"Destek <destek@cinselhobi.com>"`)
+   - `ADMIN_NOTIFY_TO`: Admin bildirim email adresi (varsayılan: `destek@cinselhobi.com`)
 
 **Not:** `npm run db:migrate` komutunu çalıştırmadan önce `DATABASE_URL` değişkeninin `.env.local` veya `.env` dosyasında tanımlı olduğundan emin olun.
 
