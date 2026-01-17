@@ -61,7 +61,7 @@ export function MobileBottomNav({
   // Tab icon mapping
   const tabIcons: Record<MobileTabId, typeof Icons.home> = {
     home: Icons.home,
-    categories: Icons.grid,
+    categories: Icons.compass,
     cart: Icons.cart,
     wishlist: Icons.heart,
     profile: Icons.user,

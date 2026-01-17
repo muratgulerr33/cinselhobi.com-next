@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ProductGrid } from "./product-grid";
+import { detectIntent, IntentClass } from "@/lib/intent-heuristics";
 
 interface Product {
   id?: number;
@@ -24,6 +25,7 @@ interface LoadMoreGridProps {
   maxPrice?: number | null; // TL cinsinden
   inStock?: boolean | null;
   sub?: string; // wcId'ler virgülle ayrılmış
+  intent?: IntentClass | "all"; // Intent filtreleme (et-dokulu-urunler için)
 }
 
 export function LoadMoreGrid({
@@ -36,12 +38,26 @@ export function LoadMoreGrid({
   maxPrice,
   inStock,
   sub,
+  intent = "all",
 }: LoadMoreGridProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [cursor, setCursor] = useState<number | null>(initialCursor);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(initialCursor === null);
   const [error, setError] = useState<string | null>(null);
+
+  // Intent filtreleme (client-side, sadece et-dokulu-urunler için)
+  const filteredProducts = useMemo(() => {
+    if (categorySlug !== "et-dokulu-urunler" || intent === "all") {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const categoryContext = categorySlug ? [categorySlug] : [];
+      const result = detectIntent(product.slug, product.name, categoryContext);
+      return result.intent === intent;
+    });
+  }, [products, categorySlug, intent]);
 
   const handleLoadMore = async () => {
     // Double click/dedup koruması: loading veya done ise işlem yapma
@@ -112,7 +128,7 @@ export function LoadMoreGrid({
 
   return (
     <div className="space-y-4">
-      <ProductGrid products={products} />
+      <ProductGrid products={filteredProducts} />
       
       {error && (
         <div className="text-center text-sm text-destructive pt-2">

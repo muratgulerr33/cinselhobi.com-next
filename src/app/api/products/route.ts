@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getLatestProductsCursor, getProductsCursor, getNextCursor, type SortOption } from "@/db/queries/catalog";
+import { getLatestProductsCursor, getProductsCursor, getNextCursor, countProductsInScope, type SortOption } from "@/db/queries/catalog";
 import { PRODUCTS_PER_PAGE } from "@/config/catalog";
 import { db } from "@/db/connection";
 import { categories } from "@/db/schema";

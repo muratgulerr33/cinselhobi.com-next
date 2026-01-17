@@ -46,8 +46,8 @@ export const footerLinks: FooterLinkGroup[] = [
   {
     title: "Kurumsal",
     links: [
-      { label: "Biz kimiz?", href: "/about" },
-      { label: "İletişim", href: "/support" },
+      { label: "Biz kimiz?", href: "/hakkimizda" },
+      { label: "İletişim", href: "/iletisim" },
       { label: "Gizlilik ve Güvenlik", href: "/gizlilik-ve-guvenlik" },
       { label: "Mesafeli Satış Sözleşmesi", href: "/mesafeli-satis-sozlesmesi" },
     ],
@@ -55,10 +55,10 @@ export const footerLinks: FooterLinkGroup[] = [
   {
     title: "Müşteri Hizmetleri",
     links: [
-      { label: "Destek Merkezi", href: "/support" },
+      { label: "Destek Merkezi", href: "/iletisim" },
       { label: "Ödeme & Teslimat", href: "/odeme-ve-teslimat" },
-      { label: "Cayma & İade", href: "/cayma-ve-iade-kosullari" },
-      { label: "S.S.S.", href: "/sss" },
+      { label: "Cayma & İade", href: "/iptal-iade-kosullari" },
+      { label: "S.S.S.", href: "/iletisim" },
     ],
   },
   {
@@ -76,8 +76,8 @@ export const footerLinks: FooterLinkGroup[] = [
 function FooterNavLinks({ links }: { links: FooterLink[] }) {
   return (
     <ul className="space-y-3">
-      {links.map((link) => (
-        <li key={link.href}>
+      {links.map((link, index) => (
+        <li key={`${link.label}-${index}`}>
           <Link
             href={link.href}
             className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"

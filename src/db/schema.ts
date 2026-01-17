@@ -139,6 +139,7 @@ export const userAddresses = pgTable("user_addresses", {
 
 export const orderStatusEnum = pgEnum("order_status", ["pending", "processing", "shipped", "delivered", "cancelled"]);
 export const paymentMethodEnum = pgEnum("payment_method", ["credit_card", "cod"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["pending", "paid", "failed", "refunded", "cancelled"]);
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -151,6 +152,10 @@ export const orders = pgTable("orders", {
   status: orderStatusEnum("status").default("pending").notNull(),
   totalAmount: integer("total_amount").notNull(), // kuruş cinsinden
   paymentMethod: paymentMethodEnum("payment_method").notNull(),
+  paymentStatus: paymentStatusEnum("payment_status").default("pending"),
+  paymentTransactionId: text("payment_transaction_id"),
+  paymentProvider: text("payment_provider"),
+  paymentMetadata: jsonb("payment_metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

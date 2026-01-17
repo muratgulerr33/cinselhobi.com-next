@@ -33,6 +33,7 @@ const RESERVED_SLUGS = [
   "odeme-ve-teslimat",
   "cayma-ve-iade-kosullari",
   "mesafeli-satis-sozlesmesi",
+  "hub",
 ];
 
 function isCategoryRoute(pathname: string): boolean {

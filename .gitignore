@@ -47,5 +47,10 @@ node_modules
 # snapshots
 data/snapshots/
 
+# product exports
+old-products/
+/export/
+/exports/
+
 # logs
 *.log

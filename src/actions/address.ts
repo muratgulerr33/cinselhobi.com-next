@@ -32,6 +32,23 @@ export async function addAddressAction(data: z.infer<typeof addressSchema>) {
 
   try {
     const validatedData = addressSchema.parse(data);
+    
+    // Idempotent kontrol: Aynı userId + title + fullAddress + city + district + phone ile mevcut kayıt varsa create etme, mevcut adresi dön
+    const existingAddresses = await getAddressesByUserId(session.user.id);
+    const existingAddress = existingAddresses.find(
+      (addr) =>
+        addr.title === validatedData.title &&
+        addr.fullAddress === validatedData.fullAddress &&
+        addr.city === validatedData.city &&
+        addr.district === validatedData.district &&
+        addr.phone === validatedData.phone
+    );
+    
+    if (existingAddress) {
+      // Mevcut adresi dön (idempotent)
+      return { ok: true, address: existingAddress };
+    }
+    
     const address = await addAddressQuery(session.user.id, validatedData);
     return { ok: true, address };
   } catch (error) {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
 
 interface Category {
   name: string;
@@ -37,7 +38,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           ) : (
             <div className="mb-3 h-32 w-full rounded-xl bg-muted" />
           )}
-          <div className="font-medium">{category.name}</div>
+          <div className="font-medium">{normalizeCategoryName(category.name)}</div>
         </Link>
       ))}
     </div>

@@ -14,6 +14,7 @@ const RESERVED_SLUGS = [
   "product-category",
   "search",
   "categories",
+  "hub",
 ];
 
 // Kategori route kontrolü
@@ -46,17 +47,10 @@ export const MOBILE_TABS: MobileTab[] = [
   },
   {
     id: "categories",
-    label: "Kategoriler",
-    href: "/categories",
+    label: "Keşfet",
+    href: "/hub",
     orderIndex: 1,
-    match: (pathname: string) => {
-      return (
-        isCategoryRoute(pathname) ||
-        pathname.startsWith("/urun/") ||
-        pathname === "/search" ||
-        pathname === "/categories"
-      );
-    },
+    match: (pathname: string) => pathname.startsWith("/hub"),
   },
   {
     id: "cart",

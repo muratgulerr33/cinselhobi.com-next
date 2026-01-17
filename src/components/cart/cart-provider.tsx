@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { CartItem, CartState } from "./cart-types";
 import { CART_STORAGE_KEY, loadCart, normalizeQty, saveCart } from "./cart-store";
 
@@ -78,7 +78,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     else setQty(productId, current - 1);
   };
 
-  const clear = () => setState({ items: [] });
+  const clear = useCallback(() => {
+    setState((prev) => {
+      if (prev.items.length === 0) return prev; // ✅ no-op => loop kırılır
+      return { ...prev, items: [] };
+    });
+  }, []);
 
   const value: CartContextValue = { items: state.items, count, subtotalCents, addItem, removeItem, setQty, inc, dec, clear };
 

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
 
 type SortOption = "newest" | "price_asc" | "price_desc" | "name_asc";
 
@@ -296,7 +297,7 @@ export function CatalogControls({
                             onChange={() => toggleSubCategory(cat.id)}
                             className="h-4 w-4 rounded border-border"
                           />
-                          <span className="text-sm">{cat.name}</span>
+                          <span className="text-sm">{normalizeCategoryName(cat.name)}</span>
                         </label>
                       ))}
                     </div>

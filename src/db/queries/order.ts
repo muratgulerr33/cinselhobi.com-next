@@ -11,6 +11,11 @@ export interface CreateOrderData {
     productId: number;
     quantity: number;
   }>;
+  // Payment alanları (opsiyonel)
+  paymentStatus?: "pending" | "paid" | "failed" | "refunded" | "cancelled";
+  paymentTransactionId?: string;
+  paymentProvider?: string;
+  paymentMetadata?: Record<string, unknown>;
 }
 
 export async function createOrder(data: CreateOrderData) {
@@ -54,6 +59,10 @@ export async function createOrder(data: CreateOrderData) {
         paymentMethod: data.paymentMethod,
         totalAmount,
         status: "pending",
+        paymentStatus: data.paymentStatus ?? "pending",
+        paymentTransactionId: data.paymentTransactionId ?? null,
+        paymentProvider: data.paymentProvider ?? null,
+        paymentMetadata: data.paymentMetadata ?? null,
       })
       .returning();
 

@@ -9,7 +9,15 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "woo:import": "node --import tsx scripts/woo-import.ts"
+    "woo:import": "node --import tsx scripts/woo-import.ts",
+    "categories:report": "node --import tsx scripts/category-detective-report.ts",
+    "categories:hub-todo": "node --import tsx scripts/export-toplevel-hub-todo.ts",
+    "products:smart-detective": "node --import tsx scripts/smart-products-detective.ts",
+    "hub:qc": "node --import tsx scripts/hub-lock-qc.ts",
+    "hub:verify": "node --import tsx scripts/verify-hub-map.ts",
+    "category:lock": "node --import tsx scripts/category-tree-analysis.ts",
+    "guardrail:forbidden": "node --import tsx scripts/guardrail-forbidden.ts",
+    "seo:export": "node --import tsx scripts/export-product-seo-bundle.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -46,6 +54,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",

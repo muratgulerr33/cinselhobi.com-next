@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useHeaderContext } from "@/components/layout/header-context";
 import { useMemo } from "react";
+import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
 
 export function ActiveFiltersBar() {
   const pathname = usePathname();
@@ -111,7 +112,7 @@ export function ActiveFiltersBar() {
         const name = wcIdToNameMap.get(wcId) || `Alt kategori ${wcId}`;
         filters.push({
           type: "sub",
-          label: name,
+          label: normalizeCategoryName(name),
           removeFn: () => {
             const params = new URLSearchParams(searchParams.toString());
             const currentSub = params.get("sub");

@@ -9,10 +9,15 @@ import {
 import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
 import { CategoryHeaderSetter } from "@/components/catalog/category-header-setter";
 import { ActiveFiltersBar } from "@/components/catalog/active-filters-bar";
+import { IntentFilterChips } from "@/components/catalog/intent-filter-chips";
+import type { IntentClass } from "@/lib/intent-heuristics";
 import { PRODUCTS_PER_PAGE } from "@/config/catalog";
 import { db } from "@/db/connection";
 import { categories } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
+import { institutionalContent } from "@/data/institutional-content";
+import type { Metadata } from "next";
+import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,6 +40,28 @@ const RESERVED_SLUGS = [
   "favicon.ico",
 ];
 
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const institutionalContentItem = institutionalContent[slug as keyof typeof institutionalContent];
+  
+  if (institutionalContentItem) {
+    return {
+      title: institutionalContentItem.title,
+    };
+  }
+
+  const category = await getCategoryBySlug(slug);
+  if (category) {
+    return {
+      title: category.name,
+    };
+  }
+
+  return {
+    title: "Sayfa Bulunamadı",
+  };
+}
+
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const params_obj = await searchParams;
@@ -42,6 +69,20 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   // Check if slug is reserved
   if (RESERVED_SLUGS.includes(slug)) {
     notFound();
+  }
+
+  // Önce institutional content kontrolü yap
+  const institutionalContentItem = institutionalContent[slug as keyof typeof institutionalContent];
+  if (institutionalContentItem) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">{institutionalContentItem.title}</h1>
+        <div
+          className="prose prose-zinc dark:prose-invert max-w-4xl"
+          dangerouslySetInnerHTML={{ __html: institutionalContentItem.content }}
+        />
+      </div>
+    );
   }
 
   const category = await getCategoryBySlug(slug);
@@ -56,6 +97,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const maxPriceParam = params_obj.max;
   const inStockParam = params_obj.inStock;
   const subParam = params_obj.sub;
+  const intentParam = params_obj.intent;
   // Eski subCategoryIds parametresini de destekle (geriye dönük uyumluluk)
   const subCategoryIdsParam = params_obj.subCategoryIds;
 
@@ -84,6 +126,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   let inStock: boolean | null = null;
   if (inStockParam === "1" || inStockParam === "true") {
     inStock = true;
+  }
+
+  // Intent filtreleme (sadece et-dokulu-urunler için)
+  let intent: IntentClass | "all" = "all";
+  if (slug === "et-dokulu-urunler" && intentParam) {
+    const intentStr = typeof intentParam === "string" ? intentParam : intentParam[0];
+    if (intentStr === "kadin" || intentStr === "erkek") {
+      intent = intentStr as IntentClass;
+    }
   }
 
   // sub parametresini parse et (wcId'ler virgülle ayrılmış)
@@ -145,7 +196,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       />
       <div className="space-y-6">
         <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground">
-          <h1 className="text-3xl font-bold">{category.name}</h1>
+          <h1 className="text-3xl font-bold">{normalizeCategoryName(category.name)}</h1>
           {category.description && (
             <p className="mt-2 text-muted-foreground">{category.description}</p>
           )}
@@ -153,9 +204,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-foreground">Ürünler</h2>
+          <IntentFilterChips categorySlug={slug} products={initialProducts} />
           <ActiveFiltersBar />
           <LoadMoreGrid
-            key={`${slug}|${sort}|${minPriceParam ?? ""}|${maxPriceParam ?? ""}|${inStockParam ?? ""}|${subParam ?? ""}`}
+            key={`${slug}|${sort}|${minPriceParam ?? ""}|${maxPriceParam ?? ""}|${inStockParam ?? ""}|${subParam ?? ""}|${intent}`}
             initialProducts={initialProducts}
             initialCursor={initialCursor}
             limit={PRODUCTS_PER_PAGE}
@@ -165,6 +217,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             maxPrice={maxPriceParam ? Number(maxPriceParam) : null}
             inStock={inStock}
             sub={subParam ? (typeof subParam === "string" ? subParam : subParam[0]) : undefined}
+            intent={intent}
           />
         </section>
       </div>

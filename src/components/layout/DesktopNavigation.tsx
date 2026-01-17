@@ -14,54 +14,11 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Icons } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+import { getCategoryTreeFromHubMap } from "@/config/hub-map";
 
-// Category tree data model
-const categoryTree = [
-  {
-    label: "Kadınlara Özel",
-    slug: "kadinlara-ozel",
-    children: [
-      { label: "Şişme Erkekler", slug: "sisme-erkekler" },
-      { label: "Bayan İstek Arttırıcılar", slug: "bayan-istek-arttiricilar" },
-      { label: "Fantezi Giyim", slug: "fantezi-giyim" },
-      { label: "Fetiş ve Fantezi", slug: "fetis-ve-fantezi" },
-    ],
-  },
-  {
-    label: "Erkeklere Özel",
-    slug: "erkeklere-ozel",
-    children: [
-      { label: "Şişme Kadınlar", slug: "sisme-kadinlar" },
-      { label: "Penis Pompaları", slug: "penis-pompalari" },
-      { label: "Suni Vajina Mastürbatörler", slug: "suni-vajina-masturbatorler" },
-      { label: "Halka ve Kılıflar", slug: "halka-ve-kiliflar" },
-    ],
-  },
-  {
-    label: "Sex Oyuncakları",
-    slug: "sex-oyuncaklari",
-    children: [
-      { label: "Belden Bağlamalılar", slug: "belden-baglamalilar" },
-      { label: "Et Dokulu Ürünler", slug: "et-dokulu-urunler" },
-      { label: "Modern Vibratörler", slug: "modern-vibratorler" },
-      { label: "Realistik Dildolar", slug: "realistik-dildolar" },
-      { label: "Sex Makinaları", slug: "sex-makinalari" },
-    ],
-  },
-  {
-    label: "Kozmetik",
-    slug: "kozmetik",
-    children: [
-      { label: "Prezervatifler", slug: "prezervatifler" },
-      { label: "Parfümler", slug: "parfumler" },
-      { label: "Masaj Yağları", slug: "masaj-yaglari" },
-    ],
-  },
-  { label: "Geciktiriciler", slug: "geciktiriciler", children: [] },
-  { label: "Kayganlaştırıcı Jeller", slug: "kayganlastirici-jeller", children: [] },
-  { label: "Anal Oyuncaklar", slug: "anal-oyuncaklar", children: [] },
-  { label: "Realistik Mankenler", slug: "realistik-mankenler", children: [] },
-];
+// Category tree data model - Hub Map'ten beslenir
+// Navigation asla DB'den otomatik türetilmez; tek kaynak hub-map.ts config dosyasıdır
+const categoryTree = getCategoryTreeFromHubMap();
 
 // Nav link class (düz linkler için)
 const NAV_LINK_CLASS = "text-sm font-medium text-foreground transition-colors hover:text-primary";

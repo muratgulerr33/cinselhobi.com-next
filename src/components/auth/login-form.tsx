@@ -62,29 +62,29 @@ export function LoginForm({ defaultEmail = "", callbackUrl = "/" }: LoginFormPro
         <label htmlFor="email" className="block text-sm font-medium mb-1">
           E-posta
         </label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          disabled={isLoading}
-        />
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+            disabled={isLoading}
+          />
       </div>
       <div>
         <label htmlFor="password" className="block text-sm font-medium mb-1">
           Şifre
         </label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-          disabled={isLoading}
-        />
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+            disabled={isLoading}
+          />
       </div>
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}

@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Trash2,
   Share2,
+  Compass,
 } from "lucide-react";
 
 export const Icons = {
@@ -32,5 +33,6 @@ export const Icons = {
   grid: LayoutGrid,
   trash: Trash2,
   share: Share2,
+  compass: Compass,
 } as const;
 

@@ -16,7 +16,10 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { saveCheckoutAddressIntent } from "@/lib/checkout-address-intent";
+import { toast } from "sonner";
 
 const addressSchema = z.object({
   title: z.string().min(1, "Başlık gereklidir").max(100, "Başlık çok uzun"),
@@ -33,13 +36,28 @@ const addressSchema = z.object({
 
 type AddressFormData = z.infer<typeof addressSchema>;
 
+interface Address {
+  id: number;
+  title: string;
+  fullAddress: string;
+  city: string;
+  district: string;
+  phone: string;
+  isDefault: boolean;
+}
+
 interface AddressFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: "account" | "checkout";
+  onCreated?: (address: Address) => void;
 }
 
-export function AddressForm({ open, onOpenChange }: AddressFormProps) {
+export function AddressForm({ open, onOpenChange, mode = "account", onCreated }: AddressFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,9 +82,30 @@ export function AddressForm({ open, onOpenChange }: AddressFormProps) {
     setIsSubmitting(true);
     setError(null);
 
+    // EN ÜSTTE: Checkout mode'da guest ise server action tetiklenmeden önce intent kaydet ve login'e yönlendir
+    if (mode === "checkout" && !isAuthenticated) {
+      const from = window.location.pathname + window.location.search + window.location.hash;
+      saveCheckoutAddressIntent({ ...data, from, createdAt: Date.now() });
+      toast.success("Giriş yapmanız gerekiyor. Adres bilgileriniz kaydedildi.");
+      onOpenChange(false);
+      router.push(`/login?callbackUrl=${encodeURIComponent("/checkout")}`);
+      setIsSubmitting(false);
+      return; // KRİTİK: aşağıdaki addAddressAction asla çalışmamalı
+    }
+
+    // Güvenlik için ikinci guard: authenticated olmayan kullanıcılar için return
+    if (!isAuthenticated) {
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const result = await addAddressAction(data);
-      if (result.ok) {
+      if (result.ok && result.address) {
+        // Authenticated checkout mode'da callback'i çağır (guest intent akışını bozmadan)
+        if (mode === "checkout" && isAuthenticated && onCreated) {
+          onCreated(result.address);
+        }
         reset();
         onOpenChange(false);
         router.refresh();
@@ -203,7 +242,7 @@ export function AddressForm({ open, onOpenChange }: AddressFormProps) {
           <Button
             type="submit"
             onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (mode === "checkout" && isAuthLoading)}
             className="w-full h-11"
           >
             {isSubmitting ? "Kaydediliyor..." : "Adresi Kaydet"}
