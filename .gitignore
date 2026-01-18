@@ -54,3 +54,12 @@ old-products/
 
 # logs
 *.log
+
+.next/
+node_modules/
+.DS_Store
+
+# generated / local exports
+exports/
+exports.zip
+*.tgz
