@@ -57,7 +57,6 @@ old-products/
 
 .next/
 node_modules/
-.DS_Store
 
 # generated / local exports
 exports/
@@ -65,12 +64,9 @@ exports.zip
 *.tgz
 
 # build / local artifacts
-.next/
-node_modules/
 .cursor/
 
 # one-off historical / legacy
-old-products/
 mcp-server/
 
 # large local snapshots
@@ -80,4 +76,3 @@ data/snapshots/full/
 data/snapshots/sample/
 
 # local snapshots
-data/snapshots/sample/
