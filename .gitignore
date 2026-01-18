@@ -75,3 +75,6 @@ mcp-server/
 
 # large local snapshots
 data/snapshots/full/
+
+# local snapshots
+data/snapshots/sample/
