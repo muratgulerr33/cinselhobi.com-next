@@ -192,13 +192,13 @@ export function ProductView({ product }: { product: ProductType }) {
 
           {/* (B) INFO BLOCK */}
           <div className="pt-6 px-4">
-            <h1 className="text-xl font-semibold leading-tight text-foreground">
+            <h1 className="hidden lg:block text-xl font-semibold leading-tight text-foreground">
               {product.name}
             </h1>
             
             {/* Fiyat - Başlığın Hemen Altında */}
             {displayPrice && (
-              <div className="mt-2 text-2xl font-bold text-foreground">
+              <div className="hidden lg:block mt-2 text-2xl font-bold text-foreground">
                 {formatPrice(displayPrice)}
               </div>
             )}
