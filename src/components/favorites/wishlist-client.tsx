@@ -63,7 +63,7 @@ export function WishlistClient({ initialProducts }: WishlistClientProps) {
               Henüz favorin yok
             </p>
             <Link
-              href="/categories"
+              href="/hub"
               className="inline-block rounded-xl bg-primary px-6 py-3 text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
             >
               Kategorilere Git
@@ -96,4 +96,3 @@ export function WishlistClient({ initialProducts }: WishlistClientProps) {
     </div>
   );
 }
-

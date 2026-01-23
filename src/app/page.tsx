@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getLatestProductsCursor } from "@/db/queries/catalog";
 import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
 import { HomeHubGrid } from "@/components/home/home-hub-grid";
+import { FeaturedBanners } from "@/components/home/featured-banners";
 
 type CursorProduct = { id?: number; wcId?: number };
 
@@ -34,6 +35,7 @@ export default async function HomePage() {
 
       {/* Above the fold: 2x2 Hub Grid */}
       <HomeHubGrid />
+      <FeaturedBanners />
 
       {/* Yeni Ürünler (dokunma) */}
       <section className="mt-6">

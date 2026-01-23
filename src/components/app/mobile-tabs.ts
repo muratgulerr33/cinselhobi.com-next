@@ -50,7 +50,11 @@ export const MOBILE_TABS: MobileTab[] = [
     label: "Keşfet",
     href: "/hub",
     orderIndex: 1,
-    match: (pathname: string) => pathname.startsWith("/hub"),
+    match: (pathname: string) =>
+      pathname.startsWith("/hub") ||
+      pathname === "/search" ||
+      pathname === "/categories" ||
+      isCategoryRoute(pathname),
   },
   {
     id: "cart",
@@ -99,4 +103,3 @@ export function getMobileTabIndex(pathname: string): number | null {
   if (tab.id === "cart") return null;
   return tab.orderIndex;
 }
-

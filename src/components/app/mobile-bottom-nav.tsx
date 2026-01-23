@@ -68,7 +68,7 @@ export function MobileBottomNav({
   };
 
   // MOBILE_TABS'ı kullanarak tab'ları oluştur (orderIndex'e göre sırala)
-  const tabs = MOBILE_TABS.sort((a, b) => a.orderIndex - b.orderIndex).map((tab) => ({
+  const tabs = [...MOBILE_TABS].sort((a, b) => a.orderIndex - b.orderIndex).map((tab) => ({
     ...tab,
     icon: tabIcons[tab.id],
     badge: tab.id === "cart" ? displayCartCount : undefined,
@@ -238,4 +238,3 @@ export function MobileBottomNav({
     </Drawer>
   );
 }
-

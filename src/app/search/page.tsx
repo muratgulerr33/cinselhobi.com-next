@@ -80,7 +80,7 @@ async function SearchResults({ query }: { query: string }) {
         <p className="text-muted-foreground">Sonuç bulunamadı</p>
         <p className="text-sm text-muted-foreground">
           Yazımı kontrol edin veya{" "}
-          <Link href="/categories" className="text-primary hover:underline">
+          <Link href="/hub" className="text-primary hover:underline">
             kategorilere göz atın
           </Link>
         </p>

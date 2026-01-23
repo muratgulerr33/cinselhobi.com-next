@@ -84,18 +84,12 @@ export function PageTransition({ children }: PageTransitionProps) {
   const prevPathnameRef = useRef<string>(pathname);
   const reducedMotion = useReducedMotion();
 
-  // Önceki pathname'i state ile tut
-  const [prevPathname, setPrevPathname] = useState<string>(pathname);
-
   // Pathname değiştiğinde önceki değeri güncelle
   useEffect(() => {
-    const current = prevPathnameRef.current;
     prevPathnameRef.current = pathname;
-    // Bir sonraki render'da önceki değeri kullan
-    setPrevPathname(current);
   }, [pathname]);
 
-  const prevIndex = getMobileTabIndex(prevPathname);
+  const prevIndex = getMobileTabIndex(prevPathnameRef.current);
   const currentIndex = getMobileTabIndex(pathname);
 
   // Direction hesaplama
@@ -158,4 +152,3 @@ export function PageTransition({ children }: PageTransitionProps) {
     </div>
   );
 }
-
