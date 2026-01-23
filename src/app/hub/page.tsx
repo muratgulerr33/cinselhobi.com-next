@@ -15,7 +15,7 @@ export default function HubIndexPage() {
       </div>
 
       {/* Hub Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 ">
         {HUBS.map((hub) => {
           const heroSrc = `/images/hub/hero/${hub.hubSlug}.webp`;
           return (

@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <ProductView product={productData} />
-      <div className="w-full py-8 lg:py-4">
+      <div className="w-full py-8 lg:py-6">
         <RelatedProducts 
           productId={Number(rawProduct.id)} 
           categoryId={categoryId}

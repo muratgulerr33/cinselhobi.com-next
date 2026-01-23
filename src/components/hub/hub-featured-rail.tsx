@@ -186,6 +186,7 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
           <div
             ref={railRef}
             data-featured-rail="true"
+            data-ch-carousel="true"
             onMouseDown={onMouseDown}
             onClickCapture={(e) => {
               if (drag.current.moved) {
@@ -194,7 +195,7 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
                 drag.current.moved = false;
               }
             }}
-            className="no-scrollbar flex flex-nowrap gap-3 overflow-x-auto cursor-grab active:cursor-grabbing select-none"
+            className="no-scrollbar flex flex-nowrap gap-3 overflow-x-auto cursor-grab active:cursor-grabbing select-none [&_*]:!touch-auto"
             style={{
               touchAction: "pan-x",
               WebkitOverflowScrolling: "touch",

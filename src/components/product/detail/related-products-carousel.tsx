@@ -27,7 +27,8 @@ export function RelatedProductsCarousel({ products }: RelatedProductsCarouselPro
           opts={{
             align: "start",
             loop: true,
-          }}
+            skipSnaps: true,
+                      }}
           className="w-full max-w-full min-w-0"
         >
           <CarouselContent className="pr-4">
@@ -38,7 +39,7 @@ export function RelatedProductsCarousel({ products }: RelatedProductsCarouselPro
               return (
                 <CarouselItem
                   key={`related-${product.id}-${product.slug}`}
-                  className="!basis-1/2 md:!basis-1/3 lg:!basis-1/4"
+                  className="!basis-1/2 md:!basis-1/3 lg:!basis-1/4 xl:!basis-1/5 2xl:!basis-1/6"
                 >
                   <div className="p-2">
                     <ProductCard

@@ -67,7 +67,7 @@ export const footerLinks: FooterLinkGroup[] = [
       { label: "Kadınlara Özel", href: "/hub/kadin-ve-haz" },
       { label: "Erkeklere Özel", href: "/hub/erkek-ve-performans" },
       { label: "Vibratörler", href: "/sex-oyuncaklari?sub=223%2C222%2C221%2C220" },
-      { label: "Kayganlaştırıcı Jeller", href: "/kayganlastirici-jeller" },
+      { label: "Kayganlaştırıcılar", href: "/kayganlastirici-jeller" },
       { label: "Geciktiriciler", href: "/geciktiriciler" },
     ],
   },

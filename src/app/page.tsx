@@ -1,43 +1,51 @@
-import { getTopCategories, getLatestProductsCursor, getNextCursor } from "@/db/queries/catalog";
-import { CategoryGrid } from "@/components/catalog/category-grid";
-import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
-import { PRODUCTS_PER_PAGE } from "@/config/catalog";
 import { auth } from "@/auth";
+import { getLatestProductsCursor } from "@/db/queries/catalog";
+import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
+import { HomeHubGrid } from "@/components/home/home-hub-grid";
 
-export default async function Home() {
+type CursorProduct = { id?: number; wcId?: number };
+
+function getNextCursor(products: CursorProduct[], limit: number): number | null {
+  // If we fetched fewer than `limit`, there is no next page.
+  if (products.length < limit) return null;
+
+  const last = products[products.length - 1];
+  // Prefer DB id; fallback to WooCommerce id if that's what the query returns.
+  const cursor = last?.id ?? last?.wcId ?? null;
+
+  // If cursor is missing for some reason, stop pagination safely.
+  return typeof cursor === "number" ? cursor : null;
+}
+
+export default async function HomePage() {
   const session = await auth();
   const userId = session?.user?.id ?? null;
-  
-  const categories = await getTopCategories(8);
-  
-  // İlk sayfa ürünlerini cursor-based olarak çek
-  const initialProducts = await getLatestProductsCursor({ limit: PRODUCTS_PER_PAGE, userId });
-  const initialCursor = getNextCursor(initialProducts, PRODUCTS_PER_PAGE);
+
+  // Home: "Yeni Ürünler" listesi cursor-based pagination ile gelir (Load More).
+  // BU KISIM: HomeHubGrid eklenirken BOZULMAMALI.
+  const limit = 20;
+
+  const initialProducts = await getLatestProductsCursor({ limit, userId });
+  const initialCursor = getNextCursor(initialProducts, limit);
 
   return (
-    <div className="space-y-6">
-      {/* Hero Card */}
-      <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground">
-        <h1 className="text-3xl font-bold">Hoş Geldiniz</h1>
-        <p className="mt-2 text-muted-foreground">
-          Cinselhobi&apos;ye hoş geldiniz. Hobi ve el sanatları dünyasına adım atın.
-        </p>
-      </div>
+    <div className="max-w-md mx-auto px-4 py-6 pb-20 xl:max-w-6xl 2xl:max-w-7xl">
+      {/* Header'a dokunma (layout / header component aynı kalacak) */}
 
-      {/* Categories Section */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Kategoriler</h2>
-        <CategoryGrid categories={categories} />
-      </section>
+      {/* Above the fold: 2x2 Hub Grid */}
+      <HomeHubGrid />
 
-      {/* Latest Products Section */}
-      <section className="space-y-4">
+      {/* Yeni Ürünler (dokunma) */}
+      <section className="mt-6">
         <h2 className="text-xl font-semibold text-foreground">Yeni Ürünler</h2>
-        <LoadMoreGrid 
-          initialProducts={initialProducts} 
-          initialCursor={initialCursor} 
-          limit={PRODUCTS_PER_PAGE} 
-        />
+
+        <div className="mt-4">
+          <LoadMoreGrid
+            initialProducts={initialProducts}
+            initialCursor={initialCursor}
+            limit={limit}
+          />
+        </div>
       </section>
     </div>
   );

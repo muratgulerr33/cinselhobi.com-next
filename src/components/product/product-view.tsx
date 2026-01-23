@@ -115,7 +115,7 @@ export function ProductView({ product }: { product: ProductType }) {
   const galleryImages = product.images;
 
   return (
-    <div className="relative z-50 min-h-screen bg-white dark:bg-background min-w-0 w-full max-w-full">
+    <div className="relative z-50 min-h-screen lg:min-h-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0 bg-white dark:bg-background min-w-0 w-full max-w-full">
       {/* Client Side Header Title Güncellemesi */}
       <HeaderTitle title={product.name} />
       
@@ -247,9 +247,6 @@ export function ProductView({ product }: { product: ProductType }) {
                   </div>
                 )}
               </div>
-
-              {/* Spacer for sticky bar */}
-              <div className="pb-32 lg:pb-0" />
             </div>
 
             {/* Desktop Buy Box */}
