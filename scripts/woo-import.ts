@@ -85,6 +85,7 @@ async function fetchWithRetry(
 }
 
 // WooCommerce API'den veri çekme
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchWooData(endpoint: string, page = 1, status?: string): Promise<{ data: any[]; totalPages?: number }> {
   const url = new URL(`${WOO_BASE_URL}/wp-json/wc/v3/${endpoint}`);
   url.searchParams.set("per_page", "100");
@@ -138,7 +139,9 @@ async function fetchWooData(endpoint: string, page = 1, status?: string): Promis
 }
 
 // Tüm sayfaları çekme
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchAllPages(endpoint: string, status?: string): Promise<any[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allData: any[] = [];
   let page = 1;
   let totalPages: number | undefined;
@@ -219,7 +222,9 @@ async function main() {
   // 2. Ürünleri çek (sayfa sayfa)
   const productStatus = process.env.WOO_PRODUCT_STATUS ?? "publish";
   console.log(`📦 Ürünler çekiliyor (status: ${productStatus})...`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const productsData: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allFetchedProducts: any[] = []; // Tüm çekilen ürünler (sample modda limit'ten fazla olabilir)
   let page = 1;
   let totalPages: number | undefined;
@@ -350,6 +355,7 @@ async function main() {
   
   for (const product of productsData) {
     // Images array'ini minimal formata çevir
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imagesMinimal = product.images?.map((img: any) => ({
       id: img.id,
       src: img.src,

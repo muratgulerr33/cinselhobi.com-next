@@ -1,0 +1,76 @@
+{
+  "version": "v2",
+  "createdAt": "2026-01-16",
+  "description": "Category Lock v2 baseline sayıları ve kuralları - Top-level cleanup sonrası",
+  "baseline": {
+    "products": {
+      "publishInstock": 244,
+      "publishOutofstock": 30,
+      "publishTotal": 274
+    },
+    "categories": {
+      "total": 26,
+      "topLevel": 5,
+      "child": 21,
+      "maxDepth": 1
+    },
+    "healthChecks": {
+      "orphanProducts": 0,
+      "multiTopLevel": 0
+    }
+  },
+  "rules": {
+    "uiCountingStandard": {
+      "childCategory": "Direct Instock",
+      "topLevelCategory": "Rolled-Up Unique Instock",
+      "navigationVisibility": "Rolled-Up Unique Instock > 0"
+    },
+    "kozmetikRule": {
+      "description": "direct=0 olabilir; top-level sayfada rolled-up unique ile ürün gösterebiliyorsa boş kalmaz",
+      "fallback": "rolled-up uygulanmıyorsa UI'da gizle"
+    },
+    "overlapPolicy": {
+      "description": "DB'de parent+child birlikte linkli ürünler var; kategori bazlı toplamlar şişer",
+      "uiRule": "UI asla 'kategorilerdeki instock toplamı'nı global ürün sayısı sanmayacak"
+    }
+  },
+  "openDecisions": {
+    "vibratorler": {
+      "status": "LOCK DEĞİL",
+      "candidates": ["modern-vibratorler", "realistik-vibratorler"],
+      "question": "Tek slug mı, sanal koleksiyon mu?"
+    },
+    "appAkilli": {
+      "status": "LOCK DEĞİL",
+      "question": "İsim/etiket kuralı lock değil"
+    },
+    "hubLocation": {
+      "status": "LOCK DEĞİL",
+      "question": "Hub'lar DB'de mi UI'da mı yaşayacak? URL stratejisi lock değil"
+    }
+  },
+  "changeLog": [
+    {
+      "version": "v1",
+      "date": "2026-01-15",
+      "description": "İlk baseline oluşturuldu",
+      "changes": [
+        "Baseline sayıları kilitlendi",
+        "UI sayım standardı tanımlandı",
+        "Kozmetik kuralı dokümante edildi",
+        "Overlap politikası belirlendi"
+      ]
+    },
+    {
+      "version": "v2",
+      "date": "2026-01-16",
+      "description": "Top-level cleanup sonrası baseline güncellendi",
+      "changes": [
+        "Top-level kategori sayısı 9'dan 5'e düşürüldü",
+        "4 kategori parent altına taşındı: anal-oyuncaklar, kayganlastirici-jeller, geciktiriciler, realistik-mankenler",
+        "Child kategori sayısı 17'den 21'e çıktı",
+        "Top-level kategoriler: erkeklere-ozel, kadinlara-ozel, sex-oyuncaklari, kozmetik, fantezi-aksesuarlar"
+      ]
+    }
+  ]
+}

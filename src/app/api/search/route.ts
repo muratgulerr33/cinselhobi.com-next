@@ -1,0 +1,108 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/connection";
+import { products, categories, productCategories } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { searchCatalog } from "@/lib/search/search-utils";
+import { toSearchProduct, toSearchCategory } from "@/lib/search/catalog-adapters";
+
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const q = searchParams.get("q");
+  const limitParam = searchParams.get("limit");
+
+  if (!q || !q.trim()) {
+    return NextResponse.json({ 
+      items: [],
+      categories: [],
+      fallbackCategory: null,
+      fallbackItems: [],
+    });
+  }
+
+  const limit = Math.min(parseInt(limitParam || "8", 10), 20);
+  const query = q.trim();
+
+  try {
+    // Get all published products
+    const allProducts = await db
+      .select({
+        id: products.id,
+        name: products.name,
+        slug: products.slug,
+        price: products.price,
+        images: products.images,
+      })
+      .from(products)
+      .where(eq(products.status, "publish"));
+
+    // Get all categories
+    const allCategories = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        slug: categories.slug,
+        imageUrl: categories.imageUrl,
+      })
+      .from(categories);
+
+    // Get all product-category relationships in one query
+    const allProductCategories = await db
+      .select({
+        productId: productCategories.productId,
+        categorySlug: categories.slug,
+      })
+      .from(productCategories)
+      .innerJoin(categories, eq(productCategories.categoryId, categories.id));
+
+    // Build map: productId -> categorySlugs[]
+    const productCategoryMap = new Map<number, string[]>();
+    for (const pc of allProductCategories) {
+      const existing = productCategoryMap.get(pc.productId) || [];
+      existing.push(pc.categorySlug);
+      productCategoryMap.set(pc.productId, existing);
+    }
+
+    // Attach category slugs to products
+    const productsWithCategories = allProducts.map((product) => {
+      const categorySlugs = productCategoryMap.get(product.id) || [];
+      return toSearchProduct(product, categorySlugs);
+    });
+
+    const searchCategories = allCategories.map(toSearchCategory);
+
+    // Perform search
+    const searchResult = searchCatalog({
+      query,
+      products: productsWithCategories,
+      categories: searchCategories,
+    });
+
+    // Format response
+    const items = searchResult.products
+      .slice(0, limit)
+      .map(({ score, ...product }) => product);
+
+    const categoryResults = searchResult.categories.map(({ score, ...category }) => category);
+
+    // Format fallback items - always an array (guaranteed by searchCatalog)
+    const fallbackItems = searchResult.fallbackItems
+      .slice(0, limit)
+      .map(({ score, ...product }) => product);
+
+    return NextResponse.json({
+      items,
+      categories: categoryResults,
+      fallbackCategory: searchResult.fallbackCategory || null,
+      fallbackItems,
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    return NextResponse.json({ 
+      items: [],
+      categories: [],
+      fallbackCategory: null,
+      fallbackItems: [],
+    }, { status: 500 });
+  }
+}
+
