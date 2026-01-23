@@ -76,3 +76,6 @@ data/snapshots/full/
 data/snapshots/sample/
 
 # local snapshots
+
+# local db dumps
+*.dump
