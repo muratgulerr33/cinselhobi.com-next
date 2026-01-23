@@ -29,7 +29,7 @@ export default async function HomePage() {
   const initialCursor = getNextCursor(initialProducts, limit);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-6 pb-20 xl:max-w-6xl 2xl:max-w-7xl">
+    <div className="mx-auto w-full max-w-md px-4 py-6 pb-20 sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-screen-2xl">
       {/* Header'a dokunma (layout / header component aynı kalacak) */}
 
       {/* Above the fold: 2x2 Hub Grid */}

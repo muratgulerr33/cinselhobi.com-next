@@ -30,7 +30,7 @@ const TILES = [
 
 export function HomeHubGrid() {
   return (
-    <div data-home-hub-clamp className="mx-auto w-full max-w-2xl">
+    <div data-home-hub-clamp className="w-full">
 <section aria-label="Hızlı koleksiyonlar" className="mt-4">
       <div className="grid grid-cols-2 gap-3">
         {TILES.map((tile) => (

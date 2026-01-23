@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HubIndexLoading() {
   return (
-    <div className="max-w-md mx-auto px-4 py-6 pb-20">
+    <div className="mx-auto w-full max-w-md px-4 py-6 pb-20 sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
       {/* Hero Skeleton */}
       <div className="mb-6">
         <Skeleton className="h-9 w-48" />

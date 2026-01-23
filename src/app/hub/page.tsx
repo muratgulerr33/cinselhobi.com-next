@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 
 export default function HubIndexPage() {
   return (
-    <div className="max-w-md mx-auto px-4 py-6 pb-20">
+    <div className="mx-auto w-full max-w-md px-4 py-6 pb-20 sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">
       {/* Hero */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Senin İçin Seçtik</h1>
