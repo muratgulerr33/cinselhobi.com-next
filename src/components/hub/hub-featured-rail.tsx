@@ -197,7 +197,7 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
             }}
             className="no-scrollbar flex flex-nowrap gap-3 overflow-x-auto cursor-grab active:cursor-grabbing select-none [&_*]:!touch-auto"
             style={{
-              touchAction: "pan-y",
+              touchAction: "pan-x pan-y",
               WebkitOverflowScrolling: "touch",
             }}
           >

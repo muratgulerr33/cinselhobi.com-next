@@ -1,35 +1,40 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useRef, useEffect, useLayoutEffect, useContext, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion, useIsPresent } from "framer-motion";
+import {
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useIsPresent,
+} from "framer-motion";
 import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { getMobileTabIndex } from "./mobile-tabs";
-import { getActiveTabId } from "./mobile-tabs";
+import { getMobileTabIndex, getActiveTabId } from "./mobile-tabs";
 import { consumeTabNavIntent, readTabScroll } from "./tab-scroll";
 import Footer from "./Footer";
 
 interface PageTransitionProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-function FrozenRouter({ children }: { children: React.ReactNode }) {
+function FrozenRouter({ children }: { children: ReactNode }) {
   const isPresent = useIsPresent();
   const context = useContext(LayoutRouterContext);
-
-  // Her keyed instance kendi state'ine sahip olur:
-  // - isPresent=true (yeni sayfa / normal render): state güncellenir
-  // - isPresent=false (exit animasyonu): state SABİT kalır -> eski sayfa "freeze" olur
   const [frozenContext, setFrozenContext] = useState(context);
-  
-  // State'i sadece isPresent true olduğunda güncelle
-  // useLayoutEffect yerine render sırasında conditional update
-  if (isPresent && frozenContext !== context) {
-    // Bu bir side effect ama React'in önerdiği pattern değil
-    // Alternatif: useSyncExternalStore veya başka bir pattern kullanılabilir
-    // Şimdilik bu şekilde bırakıyoruz çünkü animasyon için gerekli
+
+  // Exit animasyonu sırasında (isPresent=false) router state'i freeze kalsın.
+  // Normalde (isPresent=true) güncel context'e senkronla.
+  useLayoutEffect(() => {
+    if (!isPresent) return;
     setFrozenContext(context);
-  }
+  }, [isPresent, context]);
 
   return (
     <LayoutRouterContext.Provider value={frozenContext}>
@@ -38,7 +43,13 @@ function FrozenRouter({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ScreenShell({ children, pathnameKey }: { children: React.ReactNode; pathnameKey: string }) {
+function ScreenShell({
+  children,
+  pathnameKey,
+}: {
+  children: ReactNode;
+  pathnameKey: string;
+}) {
   const isPresent = useIsPresent();
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentTabId = getActiveTabId(pathnameKey);
@@ -46,7 +57,8 @@ function ScreenShell({ children, pathnameKey }: { children: React.ReactNode; pat
   // Scroll restore - paint'ten önce uygula
   useLayoutEffect(() => {
     if (!isPresent) return;
-    if (!scrollRef.current) return;
+    const el = scrollRef.current;
+    if (!el) return;
     if (!currentTabId) return;
 
     const intent = consumeTabNavIntent();
@@ -54,11 +66,11 @@ function ScreenShell({ children, pathnameKey }: { children: React.ReactNode; pat
     if (intent.toTabId !== currentTabId) return;
 
     const y = readTabScroll(currentTabId);
-    scrollRef.current.scrollTop = y;
+    el.scrollTop = y;
+
     requestAnimationFrame(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = y;
-      }
+      const el2 = scrollRef.current;
+      if (el2) el2.scrollTop = y;
     });
   }, [pathnameKey, currentTabId, isPresent]);
 
@@ -84,35 +96,29 @@ export function PageTransition({ children }: PageTransitionProps) {
   const prevPathnameRef = useRef<string>(pathname);
   const reducedMotion = useReducedMotion();
 
-  // Pathname değiştiğinde önceki değeri güncelle
+  // Pathname değiştiğinde önceki değeri bir sonraki render için sakla.
   useEffect(() => {
     prevPathnameRef.current = pathname;
   }, [pathname]);
 
+  // Bu ref okuması, animasyon yönünü "o anki" önceki route'a göre hesaplamak için şart.
+  // (Aksi halde yön 0'a düşüp exit animasyonu bozulabiliyor.)
+  // eslint-disable-next-line react-hooks/refs
   const prevIndex = getMobileTabIndex(prevPathnameRef.current);
   const currentIndex = getMobileTabIndex(pathname);
 
-  // Direction hesaplama
   let direction = 0;
   if (prevIndex !== null && currentIndex !== null && prevIndex !== currentIndex) {
-    if (currentIndex > prevIndex) {
-      direction = 1; // sağdan gelsin
-    } else {
-      direction = -1; // soldan gelsin
-    }
+    direction = currentIndex > prevIndex ? 1 : -1;
   }
 
-  // Reduced motion veya direction 0 ise animasyon yok
   const shouldAnimate = !reducedMotion && direction !== 0;
 
-  // Variant'lar - 3 state: enter / center / exit (opacity kaldırıldı)
   const variants = {
     enter: (dir: number) => ({
       x: dir === 1 ? "100%" : "-100%",
     }),
-    center: {
-      x: "0%",
-    },
+    center: { x: "0%" },
     exit: (dir: number) => ({
       x: dir === 1 ? "-100%" : "100%",
     }),
@@ -125,13 +131,14 @@ export function PageTransition({ children }: PageTransitionProps) {
         damping: 35,
         bounce: 0,
       }
-    : {
-        duration: 0,
-      };
+    : { duration: 0 };
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden">
-      <div className="grid w-full min-w-0 max-w-full bg-background" style={{ gridTemplateColumns: '1fr' }}>
+      <div
+        className="grid w-full min-w-0 max-w-full bg-background"
+        style={{ gridTemplateColumns: "1fr" }}
+      >
         <AnimatePresence mode="sync" initial={false}>
           <motion.div
             key={pathname}
