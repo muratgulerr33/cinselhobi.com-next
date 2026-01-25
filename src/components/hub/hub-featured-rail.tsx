@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { type CategoryBubble } from "./category-bubble-rail";
 import { ProductCard } from "@/components/catalog/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,47 +28,19 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
   const [hasFetched, setHasFetched] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement | null>(null);
-  
-  const drag = useRef<{ down: boolean; startX: number; startLeft: number; moved: boolean }>({
-    down: false,
-    startX: 0,
-    startLeft: 0,
-    moved: false,
-  });
 
-  // Desktop mouse drag handlers (only for mouse, not touch)
-  function onMouseDown(e: React.MouseEvent) {
-    if (e.button !== 0) return; // Only left click
+  // Desktop arrow scroll handlers (xl+ only)
+  const scrollLeft = useCallback(() => {
     const el = railRef.current;
     if (!el) return;
-    
-    const startLeft = el.scrollLeft;
-    drag.current.down = true;
-    drag.current.moved = false;
-    drag.current.startX = e.clientX;
-    drag.current.startLeft = startLeft;
-    e.preventDefault();
+    el.scrollBy({ left: -320, behavior: "smooth" });
+  }, []);
 
-    function onMouseMove(e: MouseEvent) {
-      if (!drag.current.down) return;
-      const currentEl = railRef.current;
-      if (!currentEl) return;
-      const dx = e.clientX - drag.current.startX;
-      if (Math.abs(dx) > 8) {
-        drag.current.moved = true;
-        currentEl.scrollLeft = startLeft - dx;
-      }
-    }
-
-    function onMouseUp() {
-      drag.current.down = false;
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    }
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  }
+  const scrollRight = useCallback(() => {
+    const el = railRef.current;
+    if (!el) return;
+    el.scrollBy({ left: 320, behavior: "smooth" });
+  }, []);
 
   // Get featured category (first one)
   const featured = categories.length > 0 ? categories[0] : null;
@@ -183,21 +156,30 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
 
       {!loading && !error && products.length > 0 && (
         <div className="px-4 relative">
+          {/* Desktop arrow buttons (xl+) */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Önceki ürünler"
+            className="hidden xl:flex absolute left-6 top-1/2 z-10 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-sm hover:bg-background/90 transition-colors pointer-events-auto"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Sonraki ürünler"
+            className="hidden xl:flex absolute right-6 top-1/2 z-10 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-sm hover:bg-background/90 transition-colors pointer-events-auto"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
           <div
             ref={railRef}
             data-featured-rail="true"
             data-ch-carousel="true"
-            onMouseDown={onMouseDown}
-            onClickCapture={(e) => {
-              if (drag.current.moved) {
-                e.preventDefault();
-                e.stopPropagation();
-                drag.current.moved = false;
-              }
-            }}
-            className="no-scrollbar flex flex-nowrap gap-3 overflow-x-auto cursor-grab active:cursor-grabbing select-none [&_*]:!touch-auto"
+            className="no-scrollbar flex flex-nowrap gap-3 overflow-x-auto [&_*]:!touch-auto snap-x snap-mandatory"
             style={{
-              touchAction: "pan-x pan-y",
               WebkitOverflowScrolling: "touch",
             }}
           >
@@ -210,7 +192,7 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
                 : [];
 
               return (
-                <div key={product.id} className="shrink-0 w-40">
+                <div key={product.id} className="shrink-0 w-40 snap-start">
                   <ProductCard
                     product={{
                       id: product.id,
@@ -226,7 +208,7 @@ export function HubFeaturedRail({ categories }: HubFeaturedRailProps) {
               );
             })}
           </div>
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background to-transparent xl:hidden" />
         </div>
       )}
     </section>

@@ -206,7 +206,7 @@ export function ProductCard({
       >
         {/* Image Area */}
         <div
-          className="relative aspect-[4/5] overflow-hidden bg-gray-50 rounded-xl select-none [-webkit-touch-callout:none] [-webkit-user-select:none] [user-select:none] [touch-action:pan-y]"
+          className="relative aspect-[4/5] overflow-hidden bg-gray-50 rounded-xl select-none [-webkit-touch-callout:none] [-webkit-user-select:none] [user-select:none] touch-pan-y"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

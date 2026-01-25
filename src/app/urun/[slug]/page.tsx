@@ -54,9 +54,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: "Ürün Bulunamadı" };
   }
 
-  const images = normalizeImages(product.images);
-  const mainImage = images[0]?.src || "/placeholder.jpg";
-  
   // HTML'i temizle ve temiz metin al
   const rawDesc = product.shortDescription || product.description || "";
   const cleanDesc = stripHtml(rawDesc);
@@ -66,9 +63,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // Temiz metni 160 karakterde kes ve sonuna ... koy
     description: cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + "..." : cleanDesc,
     openGraph: {
-      images: [mainImage],
+      images: ["/og.png"],
       title: product.name,
       description: cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + "..." : cleanDesc,
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: ["/og.png"],
     },
   };
 }

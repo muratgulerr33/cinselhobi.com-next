@@ -31,8 +31,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cinselhobi",
-  description: "Cinselhobi - Hobi ve El Sanatları",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "https://www.cinselhobi.com"
+  ),
+  title: {
+    default: "Cinselhobi",
+    template: "%s | Cinselhobi",
+  },
+  description: "Türkiye'deki en gizli ve plus deneyimlerin platformu.",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "android-chrome", url: "/android-chrome-192.png", sizes: "192x192", type: "image/png" },
+      { rel: "android-chrome", url: "/android-chrome-512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
+  openGraph: {
+    images: ["/og.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og.png"],
+  },
 };
 
 export const viewport = {
