@@ -47,5 +47,35 @@ node_modules
 # snapshots
 data/snapshots/
 
+# product exports
+old-products/
+/export/
+/exports/
+
 # logs
 *.log
+
+.next/
+node_modules/
+
+# generated / local exports
+exports/
+exports.zip
+*.tgz
+
+# build / local artifacts
+.cursor/
+
+# one-off historical / legacy
+mcp-server/
+
+# large local snapshots
+data/snapshots/full/
+
+# local snapshots
+data/snapshots/sample/
+
+# local snapshots
+
+# local db dumps
+*.dump
