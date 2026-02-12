@@ -43,18 +43,24 @@ export const metadata: Metadata = {
   description: "Türkiye'deki en gizli ve plus deneyimlerin platformu.",
   icons: {
     icon: [
-      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
     other: [
-      { rel: "android-chrome", url: "/android-chrome-192.png", sizes: "192x192", type: "image/png" },
-      { rel: "android-chrome", url: "/android-chrome-512.png", sizes: "512x512", type: "image/png" },
+      { rel: "icon", url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+      { rel: "icon", url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
+      { rel: "icon", url: "/favicon-16x16.webp", sizes: "16x16", type: "image/webp" },
+      { rel: "icon", url: "/favicon-32x32.webp", sizes: "32x32", type: "image/webp" },
+      { rel: "icon", url: "/apple-touch-icon.webp", sizes: "180x180", type: "image/webp" },
+      { rel: "icon", url: "/android-chrome-192x192.webp", sizes: "192x192", type: "image/webp" },
+      { rel: "icon", url: "/android-chrome-512x512.webp", sizes: "512x512", type: "image/webp" },
     ],
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     images: ["/og.png"],
     type: "website",
