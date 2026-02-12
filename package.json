@@ -17,7 +17,10 @@
     "hub:verify": "node --import tsx scripts/verify-hub-map.ts",
     "category:lock": "node --import tsx scripts/category-tree-analysis.ts",
     "guardrail:forbidden": "node --import tsx scripts/guardrail-forbidden.ts",
-    "seo:export": "node --import tsx scripts/export-product-seo-bundle.ts"
+    "seo:export": "node --import tsx scripts/export-product-seo-bundle.ts",
+    "eroshop:image-map": "node --import tsx scripts/eroshop-image-map.ts",
+    "eroshop:image-download": "node --import tsx scripts/eroshop-image-download.ts",
+    "eroshop:image-apply": "node --import tsx scripts/eroshop-image-apply.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

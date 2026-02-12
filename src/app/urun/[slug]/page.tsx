@@ -7,6 +7,8 @@ import { db } from "@/db/connection";
 import { productCategories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+export const revalidate = 600;
+
 // --- YARDIMCI 1: Fiyat Dönüştürücü ---
 function toNum(val: unknown): number | null {
   if (val === null || val === undefined || val === "") return null;

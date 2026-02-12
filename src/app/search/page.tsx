@@ -8,6 +8,8 @@ import { toSearchProduct, toSearchCategory } from "@/lib/search/catalog-adapters
 import { SearchResultItem } from "@/components/search/search-result-item";
 import { formatPrice, getPrimaryImageUrl } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
 }
@@ -83,7 +85,7 @@ async function SearchResults({ query }: { query: string }) {
 
   // Get product-category relationships only for filtered products (reduces join size)
   const productIds = filteredProducts.map((p) => p.id);
-  let productCategoryMap = new Map<number, string[]>();
+  const productCategoryMap = new Map<number, string[]>();
   
   if (productIds.length > 0) {
     const filteredProductCategories = await db

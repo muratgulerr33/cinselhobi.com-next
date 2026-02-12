@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 // Yeni güncellediğimiz provider
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { Header } from "@/components/layout/header";
+import { HeaderContent } from "@/components/layout/header";
 import { HeaderProvider } from "@/components/layout/header-context";
 import { DesktopHeader } from "@/components/layout/DesktopHeader";
 import Footer from "@/components/app/Footer";
@@ -16,7 +17,6 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
-import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,12 +68,9 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover" as const,
   interactiveWidget: "resizes-content" as const,
 };
-
-export const dynamic = 'force-dynamic';
 
 export default function RootLayout({
   children,
@@ -101,7 +98,9 @@ export default function RootLayout({
                 <HeaderProvider>
                   <SearchProvider>
                     <div className="min-h-dvh bg-background text-foreground">
-                      <Header />
+                      <Suspense fallback={<header className="fixed top-0 left-0 right-0 z-50 h-14 xl:h-16 border-b border-border bg-background" />}>
+                        <HeaderContent />
+                      </Suspense>
                       <DesktopHeader />
                       <SearchOverlay />
                       <main className="flex-1 overflow-hidden xl:overflow-visible">

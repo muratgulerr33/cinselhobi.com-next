@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, Suspense, ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { getMyFavoriteProductIdsAction } from "@/actions/favorites";
 import { toggleFavoriteAction } from "@/actions/favorites";
@@ -115,7 +115,9 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   return (
     <FavoritesContext.Provider value={{ favoriteIds, hydrated, isFavorite, toggle }}>
       {children}
-      <FavoritesIntentConsumer />
+      <Suspense fallback={null}>
+        <FavoritesIntentConsumer />
+      </Suspense>
     </FavoritesContext.Provider>
   );
 }

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
     // Get product-category relationships only for filtered products (reduces join size)
     const productIds = filteredProducts.map((p) => p.id);
-    let productCategoryMap = new Map<number, string[]>();
+    const productCategoryMap = new Map<number, string[]>();
     
     if (productIds.length > 0) {
       const filteredProductCategories = await db

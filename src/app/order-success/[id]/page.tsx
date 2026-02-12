@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { getOrderById } from "@/db/queries/order";
 import { OrderSuccessClearCart } from "@/components/order/order-success-clear-cart";
 
+export const dynamic = "force-dynamic";
+
 interface OrderSuccessPageProps {
   params: Promise<{ id: string }>;
 }

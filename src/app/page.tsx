@@ -1,8 +1,9 @@
-import { auth } from "@/auth";
 import { getLatestProductsCursor } from "@/db/queries/catalog";
 import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
 import { HomeHubGrid } from "@/components/home/home-hub-grid";
 import { FeaturedBanners } from "@/components/home/featured-banners";
+
+export const revalidate = 600;
 
 type CursorProduct = { id?: number; wcId?: number };
 
@@ -19,14 +20,11 @@ function getNextCursor(products: CursorProduct[], limit: number): number | null 
 }
 
 export default async function HomePage() {
-  const session = await auth();
-  const userId = session?.user?.id ?? null;
-
   // Home: "Yeni Ürünler" listesi cursor-based pagination ile gelir (Load More).
-  // BU KISIM: HomeHubGrid eklenirken BOZULMAMALI.
+  // Favoriler client-side FavoritesProvider ile hydrate edilir; ISR için userId yok.
   const limit = 20;
 
-  const initialProducts = await getLatestProductsCursor({ limit, userId });
+  const initialProducts = await getLatestProductsCursor({ limit, userId: null });
   const initialCursor = getNextCursor(initialProducts, limit);
 
   return (

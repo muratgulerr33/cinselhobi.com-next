@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import {
   getCategoryBySlug,
@@ -8,6 +9,7 @@ import {
 } from "@/db/queries/catalog";
 import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
 import { CategoryHeaderSetter } from "@/components/catalog/category-header-setter";
+import { CategoryCatalogParamsSync } from "@/components/catalog/category-catalog-params-sync";
 import { ActiveFiltersBar } from "@/components/catalog/active-filters-bar";
 import { IntentFilterChips } from "@/components/catalog/intent-filter-chips";
 import type { IntentClass } from "@/lib/intent-heuristics";
@@ -18,6 +20,8 @@ import { eq, inArray } from "drizzle-orm";
 import { institutionalContent } from "@/data/institutional-content";
 import type { Metadata } from "next";
 import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -194,6 +198,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         categorySlug={slug}
         childCategories={childCategories}
       />
+      <Suspense fallback={null}>
+        <CategoryCatalogParamsSync />
+      </Suspense>
       <div className="space-y-6">
         <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground">
           <h1 className="text-3xl font-bold">{normalizeCategoryName(category.name)}</h1>

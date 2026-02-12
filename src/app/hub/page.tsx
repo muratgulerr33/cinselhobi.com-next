@@ -3,6 +3,8 @@ import Image from "next/image";
 import { HUBS } from "@/config/hub-ui";
 import { ChevronRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default function HubIndexPage() {
   return (
     <div className="mx-auto w-full max-w-md px-4 py-6 pb-20 sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl">

@@ -168,11 +168,11 @@ export function ProductView({ product }: { product: ProductType }) {
                     </div>
 
                     {/* Slider UI Elemanları */}
-                    <div className="absolute top-3 right-3 z-20 rounded-full bg-black/40 px-2 py-1 text-xs text-white backdrop-blur">
+                    <div className="absolute top-3 right-3 z-20 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur">
                       {activeIndex + 1}/{galleryImages.length}
                     </div>
 
-                    <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/35 px-2 py-1 backdrop-blur">
+                    <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/60 px-2 py-1 backdrop-blur">
                       <div className="flex items-center gap-1.5">
                         {galleryImages.map((_, i) => (
                           <button
@@ -180,11 +180,15 @@ export function ProductView({ product }: { product: ProductType }) {
                             type="button"
                             aria-label={`Görsel ${i + 1}`}
                             onClick={() => scrollToIndex(i)}
-                            className={
-                              "h-1.5 rounded-full transition-all " +
-                              (i === activeIndex ? "w-4 bg-white" : "w-1.5 bg-white/50")
-                            }
-                          />
+                            className="flex h-6 w-6 min-w-6 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                          >
+                            <span
+                              className={
+                                "rounded-full transition-all " +
+                                (i === activeIndex ? "h-1.5 w-4 bg-white" : "h-1.5 w-1.5 bg-white/50")
+                              }
+                            />
+                          </button>
                         ))}
                       </div>
                     </div>

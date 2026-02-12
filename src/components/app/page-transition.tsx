@@ -30,10 +30,11 @@ function FrozenRouter({ children }: { children: ReactNode }) {
   const [frozenContext, setFrozenContext] = useState(context);
 
   // Exit animasyonu sırasında (isPresent=false) router state'i freeze kalsın.
-  // Normalde (isPresent=true) güncel context'e senkronla.
+  // Normalde (isPresent=true) güncel context'e senkronla. setState'i async yaparak cascading render uyarısını gideriyoruz.
   useLayoutEffect(() => {
     if (!isPresent) return;
-    setFrozenContext(context);
+    const id = requestAnimationFrame(() => setFrozenContext(context));
+    return () => cancelAnimationFrame(id);
   }, [isPresent, context]);
 
   return (

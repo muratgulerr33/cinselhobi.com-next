@@ -8,6 +8,8 @@ import { ArrowLeft } from "lucide-react";
 import { HubCategoryRail } from "@/components/hub/hub-category-rail";
 import { HubFeaturedRail } from "@/components/hub/hub-featured-rail";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ hubSlug: string }>;
 }

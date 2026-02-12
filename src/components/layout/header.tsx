@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { Search, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHeaderContext } from "./header-context";
 import { useSearch } from "@/components/search/search-provider";
 import { CatalogControls } from "@/components/catalog/catalog-controls";
-import { useSearchParams } from "next/navigation";
 import { ShareButton } from "@/components/common/share-button";
 
 const RESERVED_SLUGS = [
@@ -45,10 +44,9 @@ function isCategoryRoute(pathname: string): boolean {
   return false;
 }
 
-function HeaderContent() {
+export function HeaderContent() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const isHome = pathname === "/";
   const isSearchPage = pathname === "/search";
   const isProductDetail = pathname.startsWith("/urun/") || pathname.startsWith("/product/");
@@ -58,56 +56,11 @@ function HeaderContent() {
   const isCategoryPage = isCategoryRoute(pathname);
   const isListing = !isHome && !isSearchPage && !isProductDetail && !isLegal && !isAccount && !isCart;
   const showSearch = isHome || (isListing && !isCategoryPage) || isSearchPage;
-  const { title, categoryInfo } = useHeaderContext();
+  const { title, categoryInfo, catalogParams } = useHeaderContext();
   const { openSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
 
-  // Search params'ı parse et
-  const sortParam = searchParams.get("sort");
-  const minPriceParam = searchParams.get("min");
-  const maxPriceParam = searchParams.get("max");
-  const inStockParam = searchParams.get("inStock");
-  const subParam = searchParams.get("sub");
-  // Eski subCategoryIds parametresini de destekle (geriye dönük uyumluluk)
-  const subCategoryIdsParam = searchParams.get("subCategoryIds");
-
-  const validSorts = ["newest", "price_asc", "price_desc", "name_asc"];
-  const sort = (sortParam && validSorts.includes(sortParam)) ? sortParam as "newest" | "price_asc" | "price_desc" | "name_asc" : "newest";
-
-  let minPrice: number | null = null;
-  if (minPriceParam) {
-    const parsed = Number(minPriceParam);
-    if (!Number.isNaN(parsed) && parsed >= 0) {
-      minPrice = parsed; // TL cinsinden
-    }
-  }
-
-  let maxPrice: number | null = null;
-  if (maxPriceParam) {
-    const parsed = Number(maxPriceParam);
-    if (!Number.isNaN(parsed) && parsed >= 0) {
-      maxPrice = parsed; // TL cinsinden
-    }
-  }
-
-  let inStock: boolean | null = null;
-  if (inStockParam === "1" || inStockParam === "true") {
-    inStock = true;
-  }
-
-  // sub parametresi wcId'leri içerir, CatalogControls bunu kullanacak
-  // Eski subCategoryIds parametresini de destekle (geriye dönük uyumluluk)
-  let subCategoryIds: number[] | null = null;
-  if (subCategoryIdsParam) {
-    const ids = subCategoryIdsParam.split(",").map((id) => {
-      const parsed = Number(id.trim());
-      return !Number.isNaN(parsed) ? parsed : null;
-    }).filter((id): id is number => id !== null);
-    
-    if (ids.length > 0) {
-      subCategoryIds = ids;
-    }
-  }
+  const { sort, minPrice, maxPrice, inStock, subCategoryIds } = catalogParams;
 
   // Mount anında scrolled state'i doğru set et
   useEffect(() => {
@@ -242,9 +195,5 @@ function HeaderContent() {
 }
 
 export function Header() {
-  return (
-    <Suspense fallback={<div className="h-14" />}>
-      <HeaderContent />
-    </Suspense>
-  );
+  return <HeaderContent />;
 }

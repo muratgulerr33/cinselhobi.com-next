@@ -103,7 +103,7 @@ export function MobileBottomNav({
                         "flex-1 flex flex-col items-center justify-center gap-1 py-1 min-h-11",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         "active:opacity-90",
-                        isActive ? "text-black dark:text-white" : "text-gray-400 dark:text-white/50"
+                        isActive ? "text-black dark:text-white" : "text-gray-600 dark:text-white/70"
                       )}
                       aria-label="Sepet"
                       aria-current={isActive ? "page" : undefined}
@@ -164,7 +164,7 @@ export function MobileBottomNav({
                       "flex-1 flex flex-col items-center justify-center gap-1 py-1 min-h-11",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                       "active:opacity-90",
-                      isActive ? "text-black dark:text-white" : "text-gray-400 dark:text-white/50"
+                      isActive ? "text-black dark:text-white" : "text-gray-600 dark:text-white/70"
                     )}
                     aria-current={isActive ? "page" : undefined}
                   >
