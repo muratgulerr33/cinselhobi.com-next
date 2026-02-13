@@ -55,18 +55,19 @@ function GateContent({
         <DialogTitle className="text-foreground text-xl">
           Yaş doğrulama
         </DialogTitle>
-        <DialogDescription className="text-muted-foreground text-sm">
-          Bu site 18 yaş ve üzeri kullanıcılar içindir. Devam etmek için lütfen
-          yaşınızı onaylayın.
+        <DialogDescription className="text-foreground/80 text-sm leading-relaxed">
+          Bu site 18 yaş ve üzeri <span className="font-semibold">YETİŞKİN</span> kullanıcılar içindir.
+          <br />
+          Devam etmek için lütfen yaşınızı onaylayın.
         </DialogDescription>
       </DialogHeader>
-      <div className="flex items-center justify-center gap-2 rounded-lg bg-muted/50 px-3 py-2.5 text-center text-sm text-muted-foreground">
-        <Info className="size-4 shrink-0 text-muted-foreground/80" aria-hidden />
+      <div className="flex items-center justify-center gap-2 rounded-lg bg-muted/50 px-3 py-2.5 text-center text-sm text-foreground/75">
+        <Info className="size-4 shrink-0 text-foreground/60" aria-hidden />
         18 yaşından küçükseniz lütfen siteden çıkın.
       </div>
       <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" onClick={onExit} type="button">
-          Çık
+        <Button variant="outline" onClick={onExit} type="button" className="border-border/60">
+          Geri
         </Button>
         <div ref={primaryRef}>
           <Button onClick={onConfirm} type="button">
@@ -103,7 +104,14 @@ export function AgeGate() {
 
   const handleExit = useCallback(() => {
     if (typeof window === "undefined") return;
-    window.location.replace("https://www.google.com");
+    const referrer = document.referrer;
+    if (referrer && new URL(referrer).origin !== window.location.origin) {
+      window.location.href = referrer;
+    } else if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.replace("about:blank");
+    }
   }, []);
 
   useEffect(() => {
@@ -135,7 +143,7 @@ export function AgeGate() {
           />
           <VaulContent
             className={cn(
-              "fixed inset-x-0 bottom-0 z-[100] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-2xl border border-border bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))]",
+              "fixed inset-x-0 bottom-0 z-[100] flex max-h-[85dvh] flex-col overflow-hidden rounded-t-2xl border border-border bg-background p-4 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-[max(1rem,env(safe-area-inset-bottom))]",
               "duration-200 motion-reduce:duration-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
             )}
           >
@@ -145,18 +153,19 @@ export function AgeGate() {
                 <DrawerTitle className="text-foreground text-xl font-semibold leading-none tracking-tight">
                   Yaş doğrulama
                 </DrawerTitle>
-                <DrawerDescription className="text-muted-foreground text-sm">
-                  Bu site 18 yaş ve üzeri kullanıcılar içindir. Devam etmek için
-                  lütfen yaşınızı onaylayın.
+                <DrawerDescription className="text-foreground/80 text-sm leading-relaxed">
+                  Bu site 18 yaş ve üzeri <span className="font-semibold">YETİŞKİN</span> kullanıcılar içindir.
+                  <br />
+                  Devam etmek için lütfen yaşınızı onaylayın.
                 </DrawerDescription>
               </DrawerHeader>
-              <div className="flex items-center justify-center gap-2 rounded-lg bg-muted/50 px-3 py-2.5 text-center text-sm text-muted-foreground">
-                <Info className="size-4 shrink-0 text-muted-foreground/80" aria-hidden />
+              <div className="flex items-center justify-center gap-2 rounded-lg bg-muted/50 px-3 py-2.5 text-center text-sm text-foreground/75">
+                <Info className="size-4 shrink-0 text-foreground/60" aria-hidden />
                 18 yaşından küçükseniz lütfen siteden çıkın.
               </div>
               <div className="mt-auto flex flex-col gap-3">
-                <Button variant="outline" onClick={handleExit} type="button" className="w-full">
-                  Çık
+                <Button variant="outline" onClick={handleExit} type="button" className="w-full border-border/60">
+                  Geri
                 </Button>
                 <div ref={primaryRef} className="w-full">
                   <Button onClick={handleConfirm} type="button" className="w-full">
