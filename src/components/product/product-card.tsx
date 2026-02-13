@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { Plus } from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { formatPrice } from "@/lib/format";
@@ -215,7 +215,7 @@ export function ProductCard({
         >
           {currentImage ? (
             <div className="absolute inset-0 p-4">
-              <Image
+              <SafeImage
                 src={currentImage}
                 alt={title}
                 fill

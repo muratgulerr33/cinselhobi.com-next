@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface SearchResultItemProps {
   title: string;
@@ -29,13 +29,12 @@ export function SearchResultItem({
       <div className="h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-gray-50 dark:bg-muted">
         {displayImageUrl ? (
           <div className="relative h-full w-full p-2">
-            <Image
+            <SafeImage
               src={displayImageUrl}
               alt={title}
               fill
               sizes="56px"
               className="object-contain mix-blend-multiply dark:mix-blend-normal"
-              unoptimized
             />
           </div>
         ) : (

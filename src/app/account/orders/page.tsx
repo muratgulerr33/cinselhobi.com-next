@@ -4,7 +4,7 @@ import { getUserOrders } from "@/db/queries/order";
 import { formatPriceCents, formatDate, getPrimaryImageUrl } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 
 function getStatusBadgeVariant(status: string) {
   switch (status) {
@@ -93,7 +93,7 @@ export default async function OrdersPage() {
                 <div className="flex items-start gap-4">
                   {firstImage && (
                     <div className="relative h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden border border-border bg-muted">
-                      <Image
+                      <SafeImage
                         src={firstImage}
                         alt={firstItem.product.name || "Ürün"}
                         fill
