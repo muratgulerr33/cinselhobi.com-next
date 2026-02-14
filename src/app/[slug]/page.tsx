@@ -20,6 +20,7 @@ import { eq, inArray } from "drizzle-orm";
 import { institutionalContent } from "@/data/institutional-content";
 import type { Metadata } from "next";
 import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
+import { getCanonicalBaseUrl } from "@/lib/seo/canonical";
 
 export const dynamic = "force-dynamic";
 
@@ -192,8 +193,34 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   const initialCursor = getNextCursor(initialProducts, PRODUCTS_PER_PAGE);
 
+  const baseUrl = getCanonicalBaseUrl();
+  const categoryUrl = `${baseUrl}/${slug}`;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: `${baseUrl}/` },
+      { "@type": "ListItem", position: 2, name: category.name, item: categoryUrl },
+    ],
+  };
+  const collectionPageJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: category.name,
+    url: categoryUrl,
+    ...(category.description && { description: category.description }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }}
+      />
       <CategoryHeaderSetter
         categorySlug={slug}
         childCategories={childCategories}

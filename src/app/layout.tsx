@@ -13,10 +13,14 @@ import { PageTransition } from "@/components/app/page-transition";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SearchProvider } from "@/components/search/search-provider";
 import { SearchOverlay } from "@/components/search/search-overlay";
+import { AgeGate } from "@/components/age/age-gate";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
+import { getCanonicalBaseUrl } from "@/lib/seo/canonical";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { GA4PageViews } from "@/components/analytics/GA4PageViews";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,44 +34,65 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const canonicalBase = getCanonicalBaseUrl();
+
+const siteStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${canonicalBase}/#organization`,
+      name: "Cinselhobi",
+      url: canonicalBase,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${canonicalBase}/#website`,
+      url: canonicalBase,
+      name: "Cinselhobi",
+      publisher: { "@id": `${canonicalBase}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${canonicalBase}/search?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "https://www.cinselhobi.com"
-  ),
+  metadataBase: new URL(canonicalBase),
   title: {
     default: "Cinselhobi",
     template: "%s | Cinselhobi",
   },
   description: "Türkiye'deki en gizli ve plus deneyimlerin platformu.",
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    other: [
-      { rel: "icon", url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { rel: "icon", url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
-      { rel: "icon", url: "/favicon-16x16.webp", sizes: "16x16", type: "image/webp" },
-      { rel: "icon", url: "/favicon-32x32.webp", sizes: "32x32", type: "image/webp" },
-      { rel: "icon", url: "/apple-touch-icon.webp", sizes: "180x180", type: "image/webp" },
-      { rel: "icon", url: "/android-chrome-192x192.webp", sizes: "192x192", type: "image/webp" },
-      { rel: "icon", url: "/android-chrome-512x512.webp", sizes: "512x512", type: "image/webp" },
-    ],
+    icon: [{ url: "/favicon.ico" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    images: ["/og.png"],
     type: "website",
+    url: canonicalBase,
+    title: "Cinselhobi",
+    description: "Türkiye'deki en gizli ve plus deneyimlerin platformu.",
+    images: [
+      {
+        url: "/og/cinselhobi-share-2026-02-13.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Cinselhobi",
+      },
+    ],
+    ...(process.env.NEXT_PUBLIC_FB_APP_ID && {
+      siteName: "Cinselhobi",
+      locale: "tr_TR",
+    }),
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/og.png"],
+    images: ["/og/cinselhobi-share-2026-02-13.jpg"],
   },
 };
 
@@ -87,6 +112,10 @@ export default function RootLayout({
     // suppressHydrationWarning: Next.js'in tema uyumsuzluğu uyarısını engeller
     <html lang="tr" suppressHydrationWarning className={cn(geistSans.variable, geistMono.variable, "overflow-x-clip")}>
       <body className={cn("font-sans antialiased overflow-hidden xl:overflow-auto overflow-x-clip")}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteStructuredData) }}
+        />
         {/* attribute="class": Tailwind kullandığımız için .dark class'ını html'e ekler
             defaultTheme="system": Kullanıcının cihaz ayarını otomatik algılar
             enableSystem: Sistem değişikliğini dinler
@@ -109,6 +138,7 @@ export default function RootLayout({
                       </Suspense>
                       <DesktopHeader />
                       <SearchOverlay />
+                      <AgeGate />
                       <main className="flex-1 overflow-hidden xl:overflow-visible">
                         <PageTransition>{children}</PageTransition>
                       </main>
@@ -124,6 +154,14 @@ export default function RootLayout({
             </FavoritesProvider>
           </AuthProvider>
         </ThemeProvider>
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+            <Suspense fallback={null}>
+              <GA4PageViews gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+            </Suspense>
+          </>
+        )}
       </body>
     </html>
   );

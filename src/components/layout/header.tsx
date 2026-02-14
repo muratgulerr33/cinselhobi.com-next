@@ -59,6 +59,9 @@ export function HeaderContent() {
   const { title, categoryInfo, catalogParams } = useHeaderContext();
   const { openSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const showTitle = mounted && Boolean(title);
 
   const { sort, minPrice, maxPrice, inStock, subCategoryIds } = catalogParams;
 
@@ -145,20 +148,20 @@ export function HeaderContent() {
             )}
           </div>
 
-          {/* Orta */}
+          {/* Orta — SSR + ilk CSR aynı markup (hydration mismatch önlemi): her zaman h1, içerik mounted sonrası title/Link */}
           <div className="flex-1 min-w-0 flex items-center justify-center px-2">
-            {title ? (
-              <h1 className="min-w-0 max-w-full truncate text-sm font-semibold tracking-wide text-center">
-                {title}
-              </h1>
-            ) : (
-              <Link
-                href="/"
-                className="min-w-0 max-w-full truncate text-sm font-semibold tracking-[0.2em] uppercase"
-              >
-                CİNSELHOBİ
-              </Link>
-            )}
+            <h1 className="min-w-0 max-w-full truncate text-sm font-semibold tracking-wide text-center">
+              {showTitle ? (
+                title
+              ) : (
+                <Link
+                  href="/"
+                  className="min-w-0 max-w-full truncate text-sm font-semibold tracking-[0.2em] uppercase"
+                >
+                  CİNSELHOBİ
+                </Link>
+              )}
+            </h1>
           </div>
 
           {/* Sağ */}
@@ -173,8 +176,8 @@ export function HeaderContent() {
                 initialInStock={inStock}
                 initialSubCategoryIds={subCategoryIds}
               />
-            ) : isProductDetail && title ? (
-              <ShareButton title={title} />
+            ) : isProductDetail && showTitle ? (
+              <ShareButton title={title!} />
             ) : showSearch ? (
               <button
                 type="button"

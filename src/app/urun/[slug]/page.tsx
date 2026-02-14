@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { getProductBySlug } from "@/db/queries/catalog";
+import { getProductBySlug, getPrimaryCategoryForBreadcrumb } from "@/db/queries/catalog";
 import { ProductView, ProductType } from "@/components/product/product-view";
 import { RelatedProducts } from "@/components/product/detail/related-products";
 import { db } from "@/db/connection";
 import { productCategories } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getCanonicalBaseUrl } from "@/lib/seo/canonical";
 
 export const revalidate = 600;
 
@@ -65,13 +66,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // Temiz metni 160 karakterde kes ve sonuna ... koy
     description: cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + "..." : cleanDesc,
     openGraph: {
-      images: ["/og.png"],
+      images: ["/og/cinselhobi-share-2026-02-13.jpg"],
       title: product.name,
       description: cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + "..." : cleanDesc,
     },
     twitter: {
       card: "summary_large_image",
-      images: ["/og.png"],
+      images: ["/og/cinselhobi-share-2026-02-13.jpg"],
     },
   };
 }
@@ -113,15 +114,77 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     .from(productCategories)
     .where(eq(productCategories.productId, Number(rawProduct.id)))
     .limit(1);
-  
+
   const categoryId = productCats.length > 0 ? productCats[0].categoryId : null;
+
+  const baseUrl = getCanonicalBaseUrl();
+  const productUrl = `${baseUrl}/urun/${slug}`;
+  const productImages = normalizeImages(rawProduct.images);
+  const firstImage = productImages[0]?.src;
+  const imageUrl = firstImage?.startsWith("http") ? firstImage : firstImage ? `${baseUrl}${firstImage.startsWith("/") ? "" : "/"}${firstImage}` : undefined;
+
+  // JSON-LD BreadcrumbList (invisible, SEO only). Category route: /[slug]
+  const primaryCategory = await getPrimaryCategoryForBreadcrumb(Number(rawProduct.id));
+  const breadcrumbItems: Array<{ position: number; name: string; item: string }> = [
+    { position: 1, name: "Ana Sayfa", item: `${baseUrl}/` },
+  ];
+  let position = 2;
+  if (primaryCategory) {
+    breadcrumbItems.push({
+      position: position++,
+      name: primaryCategory.name,
+      item: `${baseUrl}/${primaryCategory.slug}`,
+    });
+  }
+  breadcrumbItems.push({
+    position,
+    name: String(rawProduct.name),
+    item: productUrl,
+  });
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item) => ({
+      "@type": "ListItem",
+      position: item.position,
+      name: item.name,
+      item: item.item,
+    })),
+  };
+
+  // JSON-LD Product (kanıtlı alanlar: name, image, description, sku, offers). aggregateRating/brand yok.
+  const availability = rawProduct.stockStatus === "instock" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock";
+  const productJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: String(rawProduct.name),
+    description: stripHtml(rawProduct.shortDescription || rawProduct.description || "").slice(0, 500) || undefined,
+    url: productUrl,
+    ...(imageUrl && { image: imageUrl }),
+    ...(rawProduct.sku && { sku: String(rawProduct.sku) }),
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: String(rawProduct.currency || "TRY"),
+      price: rawProduct.price != null ? Number(rawProduct.price) / 100 : undefined,
+      availability,
+    },
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <ProductView product={productData} />
       <div className="w-full py-8 lg:py-6">
-        <RelatedProducts 
-          productId={Number(rawProduct.id)} 
+        <RelatedProducts
+          productId={Number(rawProduct.id)}
           categoryId={categoryId}
           slug={slug}
         />

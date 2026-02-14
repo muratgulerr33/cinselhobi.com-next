@@ -149,11 +149,19 @@ export function ProductView({ product }: { product: ProductType }) {
                       onScroll={onHeroScroll}
                       className="absolute inset-0 min-w-0 max-w-full overflow-x-auto snap-x snap-mandatory snap-always touch-pan-x overscroll-x-contain scrollbar-hide"
                     >
-                      <div className="flex h-full">
+                      <div
+                        className="flex h-full"
+                        style={{ width: `${galleryImages.length * 100}%`, minWidth: `${galleryImages.length * 100}%` }}
+                      >
                         {galleryImages.map((img, idx) => (
-                          <div key={`${img.src}-${idx}`} className="relative h-full min-w-full snap-start">
+                          <div
+                            key={`slide-${idx}-${img.src}`}
+                            className="relative h-full shrink-0 snap-start"
+                            style={{ flex: `0 0 ${100 / galleryImages.length}%` }}
+                          >
                             <div className="absolute inset-0 px-4 py-6">
                               <Image
+                                key={img.src}
                                 src={img.src}
                                 alt={img.alt || product.name}
                                 fill
