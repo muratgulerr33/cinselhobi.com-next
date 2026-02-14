@@ -4,7 +4,7 @@ import { getOrderDetails } from "@/db/queries/order";
 import { formatPriceCents, formatDate, getPrimaryImageUrl } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 
 function getStatusBadgeVariant(status: string) {
   switch (status) {
@@ -130,7 +130,7 @@ export default async function OrderDetailPage({
                     href={`/urun/${item.product.slug}`}
                     className="relative h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden border border-border bg-muted"
                   >
-                    <Image
+                    <SafeImage
                       src={imageUrl}
                       alt={item.product.name || "Ürün"}
                       fill

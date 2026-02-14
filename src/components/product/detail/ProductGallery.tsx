@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import type { ProductImage } from "./types";
 
@@ -64,7 +64,7 @@ export function ProductGallery({
     return (
       <div className="relative h-[clamp(320px,55vh,620px)] w-full bg-gray-50">
         <div className="absolute inset-0 p-4 sm:p-6">
-          <Image
+          <SafeImage
             src={validImages[0].src}
             alt={validImages[0].alt || title}
             fill
@@ -96,7 +96,7 @@ export function ProductGallery({
           {validImages.map((img, idx) => (
             <div key={`${img.src}-${idx}`} className="relative h-full w-full shrink-0 snap-start">
               <div className="absolute inset-0 p-4 sm:p-6">
-                <Image
+                <SafeImage
                   src={img.src}
                   alt={img.alt || title}
                   fill

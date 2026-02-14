@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { db } from "@/db/connection";
 import { products, categories, productCategories } from "@/db/schema";
-import { eq, and, or, ilike, inArray } from "drizzle-orm";
+import { eq, and, or, ilike, inArray, isNull, ne } from "drizzle-orm";
 import { searchCatalog, tokenize } from "@/lib/search/search-utils";
 import { toSearchProduct, toSearchCategory } from "@/lib/search/catalog-adapters";
 import { SearchResultItem } from "@/components/search/search-result-item";
@@ -42,8 +42,13 @@ async function SearchResults({ query }: { query: string }) {
     );
   });
   
+  const notOutOfStock = or(
+    isNull(products.stockStatus),
+    ne(products.stockStatus, "outofstock")
+  );
   const productWhere = and(
     eq(products.status, "publish"),
+    notOutOfStock,
     ...productConditions
   );
 

@@ -16,8 +16,18 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "www.cinselhobi.com",
+        pathname: "/products/**",
+      },
+      {
+        protocol: "https",
         hostname: "cinselhobi.com",
         pathname: "/wp-content/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cinselhobi.com",
+        pathname: "/products/**",
       },
     ],
   },

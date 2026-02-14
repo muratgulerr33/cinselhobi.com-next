@@ -2,6 +2,9 @@ import { db } from "@/db/connection";
 import { categories, products, productCategories, userFavorites } from "@/db/schema";
 import { eq, and, desc, isNull, or, ne, inArray, lt, asc, gte, lte, between, SQL, sql, count } from "drizzle-orm";
 
+/** Liste görünümlerinde outofstock ürünleri göstermemek için koşul (detay sayfası etkilenmez). */
+const notOutOfStock: SQL = or(isNull(products.stockStatus), ne(products.stockStatus, "outofstock")) as SQL;
+
 export async function getTopCategories(limit = 8) {
   // Rollup hesaplama: parent + tüm child kategorilerindeki publish ürün sayısı
   // Her top-level kategori için parent ve child kategorilerindeki ürünleri say
@@ -31,14 +34,14 @@ export async function getTopCategories(limit = 8) {
       // Parent + child kategori ID'lerini birleştir
       const allCategoryIds = [topCat.id, ...childCats.map((c) => c.id)];
 
-      // Rollup: parent + child kategorilerindeki publish ürün sayısı
+      // Rollup: parent + child kategorilerindeki publish ve stokta görünen ürün sayısı (outofstock hariç)
       const rollupResult = await db
         .select({
           rollupPublish: sql<number>`COUNT(DISTINCT CASE WHEN ${products.status} = 'publish' THEN ${products.id} END)`.as('rollup_publish'),
         })
         .from(productCategories)
         .innerJoin(products, eq(productCategories.productId, products.id))
-        .where(inArray(productCategories.categoryId, allCategoryIds));
+        .where(and(inArray(productCategories.categoryId, allCategoryIds), notOutOfStock));
 
       const rollupPublish = rollupResult[0]?.rollupPublish ?? 0;
 
@@ -67,7 +70,7 @@ export async function getLatestProducts(limit = 12) {
       stockStatus: products.stockStatus,
     })
     .from(products)
-    .where(eq(products.status, "publish"))
+    .where(and(eq(products.status, "publish"), notOutOfStock))
     .orderBy(desc(products.updatedAt))
     .limit(limit);
 
@@ -82,6 +85,23 @@ export async function getCategoryBySlug(slug: string) {
     .limit(1);
 
   return result[0] || null;
+}
+
+/** Sitemap için tüm kategori slug + updatedAt. */
+export async function getAllCategorySlugsForSitemap(): Promise<{ slug: string; updatedAt: Date }[]> {
+  const result = await db
+    .select({ slug: categories.slug, updatedAt: categories.updatedAt })
+    .from(categories);
+  return result.map((r) => ({ slug: r.slug, updatedAt: r.updatedAt }));
+}
+
+/** Sitemap için yayında ve stokta görünen ürün slug + updatedAt. */
+export async function getAllProductSlugsForSitemap(): Promise<{ slug: string; updatedAt: Date }[]> {
+  const result = await db
+    .select({ slug: products.slug, updatedAt: products.updatedAt })
+    .from(products)
+    .where(and(eq(products.status, "publish"), notOutOfStock));
+  return result.map((r) => ({ slug: r.slug, updatedAt: r.updatedAt }));
 }
 
 export async function getChildCategoriesByParentWcId(parentWcId: number) {
@@ -120,7 +140,7 @@ export async function getProductsByCategorySlug(slug: string, limit = 24) {
     .from(products)
     .innerJoin(productCategories, eq(products.id, productCategories.productId))
     .innerJoin(categories, eq(productCategories.categoryId, categories.id))
-    .where(and(eq(categories.slug, slug), eq(products.status, "publish")))
+    .where(and(eq(categories.slug, slug), eq(products.status, "publish"), notOutOfStock))
     .orderBy(desc(products.updatedAt))
     .limit(limit);
 
@@ -148,6 +168,27 @@ export async function getCategoriesForProduct(productId: number) {
     .where(eq(productCategories.productId, productId));
 
   return result;
+}
+
+/**
+ * Primary category for product breadcrumb (JSON-LD).
+ * Deterministic: prefer leaf (child) category; else first by id.
+ * Evidence: categories.parentWcId IS NOT NULL = child category.
+ */
+export async function getPrimaryCategoryForBreadcrumb(productId: number): Promise<{ slug: string; name: string } | null> {
+  const rows = await db
+    .select({
+      slug: categories.slug,
+      name: categories.name,
+    })
+    .from(categories)
+    .innerJoin(productCategories, eq(categories.id, productCategories.categoryId))
+    .where(eq(productCategories.productId, productId))
+    .orderBy(asc(sql`CASE WHEN ${categories.parentWcId} IS NOT NULL THEN 0 ELSE 1 END`), asc(categories.id))
+    .limit(1);
+
+  const row = rows[0];
+  return row ? { slug: row.slug, name: row.name } : null;
 }
 
 export async function getRelatedProductsBySlug(slug: string, limit = 10) {
@@ -189,6 +230,7 @@ export async function getRelatedProductsBySlug(slug: string, limit = 10) {
     .where(
       and(
         eq(products.status, "publish"),
+        notOutOfStock,
         ne(products.id, currentProduct.id),
         inArray(productCategories.categoryId, categoryIds)
       )
@@ -211,7 +253,7 @@ export async function getLatestProductsCursor(opts: { limit: number; cursor?: nu
   const { limit, cursor, userId } = opts;
   
   // Where koşullarını oluştur
-  const whereConditions = [eq(products.status, "publish")];
+  const whereConditions = [eq(products.status, "publish"), notOutOfStock];
   if (cursor !== null && cursor !== undefined) {
     whereConditions.push(lt(products.wcId, cursor));
   }
@@ -325,7 +367,7 @@ export async function getProductsCursor(opts: GetProductsCursorOptions) {
   } = opts;
 
   // Where koşullarını oluştur
-  const whereConditions: SQL[] = [eq(products.status, "publish")];
+  const whereConditions: SQL[] = [eq(products.status, "publish"), notOutOfStock];
 
   // Cursor koşulu
   if (cursor !== null && cursor !== undefined) {
@@ -485,7 +527,7 @@ export async function countProductsInScope(opts: {
   const { categorySlug, minPrice, maxPrice, inStock, subCategoryIds } = opts;
 
   // Where koşullarını oluştur (same as getProductsCursor)
-  const whereConditions: SQL[] = [eq(products.status, "publish")];
+  const whereConditions: SQL[] = [eq(products.status, "publish"), notOutOfStock];
 
   // Kategori filtresi - helper fonksiyon kullanarak scope'u belirle (same as getProductsCursor)
   let categoryIds: number[] | null = null;

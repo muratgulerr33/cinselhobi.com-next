@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import {
   Drawer,
   DrawerContent,
@@ -148,7 +148,7 @@ export function CategoryQuickLookSheet({
                   >
                     {imgSrc ? (
                       <div className="relative h-20 w-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                        <Image
+                        <SafeImage
                           src={imgSrc}
                           alt={imgAlt}
                           fill

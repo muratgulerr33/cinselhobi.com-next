@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import { updateOrderStatus } from "@/actions/admin";
 import { OrderStatusUpdateForm } from "@/components/admin/order-status-form";
 
@@ -155,7 +155,7 @@ export default async function AdminOrderDetailPage({
                     href={`/urun/${item.product.slug}`}
                     className="relative h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden border border-border bg-muted"
                   >
-                    <Image
+                    <SafeImage
                       src={imageUrl}
                       alt={item.product.name || "Ürün"}
                       fill

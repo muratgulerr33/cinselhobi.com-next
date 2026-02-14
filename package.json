@@ -4,11 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "TZ=Europe/Istanbul next dev",
+    "dev:3000": "TZ=Europe/Istanbul next dev -p 3000",
+    "dev:3010": "PORT=3010 TZ=Europe/Istanbul next dev",
     "build": "TZ=Europe/Istanbul next build",
     "start": "TZ=Europe/Istanbul next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:check": "bash scripts/db/db_check.sh",
+    "db:psql": "bash -lc 'source scripts/dev/load_env.sh && psql \"$DATABASE_URL\"'",
     "woo:import": "node --import tsx scripts/woo-import.ts",
     "categories:report": "node --import tsx scripts/category-detective-report.ts",
     "categories:hub-todo": "node --import tsx scripts/export-toplevel-hub-todo.ts",
@@ -20,7 +24,15 @@
     "seo:export": "node --import tsx scripts/export-product-seo-bundle.ts",
     "eroshop:image-map": "node --import tsx scripts/eroshop-image-map.ts",
     "eroshop:image-download": "node --import tsx scripts/eroshop-image-download.ts",
-    "eroshop:image-apply": "node --import tsx scripts/eroshop-image-apply.ts"
+    "eroshop:image-apply": "node --import tsx scripts/eroshop-image-apply.ts",
+    "export:catalog": "node --import tsx scripts/export_catalog.ts --out seo_exports/nextjs/v1",
+    "export:category-stats": "node --import tsx scripts/export_category_stats.ts --out seo_exports/nextjs/v1",
+    "export:seo:v1": "npm run export:catalog && npm run export:category-stats",
+    "seo:nginx:v1": "python3 scripts/seo/gen_nginx_rules.py --redirects-csv seo_exports/nextjs/v1/redirects/wp_redirects.v1.csv --gone-txt seo_exports/nextjs/v1/removals/spam_410_paths.v1.txt --out-dir seo_exports/nextjs/v1/nginx",
+    "seo:v1:all": "npm run export:seo:v1 && npm run seo:nginx:v1",
+    "seo:deploy:nginx:v1": "bash scripts/seo/deploy_nginx_snippets_v1.sh",
+    "seo:v1:ship": "npm run seo:v1:all && npm run seo:deploy:nginx:v1",
+    "seo:test:v1": "python3 scripts/seo/smoke_test_v1.py"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",

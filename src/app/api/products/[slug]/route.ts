@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { getProductBySlug } from "@/db/queries/catalog";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface ImageItem {
   id?: number;
@@ -40,8 +42,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  noStore();
   const { slug } = await params;
-  
+  console.log("[api/products/[slug]] HIT", slug);
+
   if (!slug) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
@@ -52,9 +56,33 @@ export async function GET(
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  const images = normalizeImages(product.images);
+  // Öncelik: DB images (array, en az 1 eleman) varsa onu kullan; wp-content fallback yok.
+  const dbImages = product.images;
+  const useDbImages =
+    Array.isArray(dbImages) && dbImages.length >= 1;
+  const images = useDbImages
+    ? normalizeImages(dbImages)
+    : normalizeImages(product.images);
 
-  return NextResponse.json({
+  // LOCAL debug only (prod'a taşınmayacak)
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[api/products/[slug]] DB images type =",
+      typeof product.images,
+      Array.isArray(product.images)
+    );
+    console.log(
+      "[api/products/[slug]] DB first src =",
+      (Array.isArray(product.images) ? (product.images as Array<{ src?: string }>)?.[0]?.src : null) ??
+        "(none)"
+    );
+    console.log(
+      "[api/products/[slug]] RESP first src =",
+      images[0]?.src ?? "(none)"
+    );
+  }
+
+  const response = NextResponse.json({
     id: product.id,
     wcId: product.wcId,
     slug: product.slug,
@@ -70,5 +98,7 @@ export async function GET(
     stockStatus: product.stockStatus || null,
     stockQuantity: product.stockQuantity || null,
   });
+  response.headers.set("x-api-source", "local-route");
+  return response;
 }
 
