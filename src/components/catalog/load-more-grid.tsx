@@ -17,7 +17,8 @@ interface Product {
 
 interface LoadMoreGridProps {
   initialProducts: Product[];
-  initialCursor: number | null;
+  /** API'nin döndürdüğü nextCursor (wcId). Ürün id'si kullanılmamalı. */
+  initialNextCursor: number | null;
   limit: number;
   categorySlug?: string;
   sort?: string;
@@ -30,7 +31,7 @@ interface LoadMoreGridProps {
 
 export function LoadMoreGrid({
   initialProducts,
-  initialCursor,
+  initialNextCursor,
   limit,
   categorySlug,
   sort,
@@ -41,9 +42,9 @@ export function LoadMoreGrid({
   intent = "all",
 }: LoadMoreGridProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [cursor, setCursor] = useState<number | null>(initialCursor);
+  const [cursorWcId, setCursorWcId] = useState<number | null>(initialNextCursor);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(initialCursor === null);
+  const [hasMore, setHasMore] = useState(initialNextCursor !== null);
   const [error, setError] = useState<string | null>(null);
 
   // Intent filtreleme (client-side, sadece et-dokulu-urunler için)
@@ -60,18 +61,19 @@ export function LoadMoreGrid({
   }, [products, categorySlug, intent]);
 
   const handleLoadMore = async () => {
-    // Double click/dedup koruması: loading veya done ise işlem yapma
-    if (loading || done || cursor === null) return;
+    if (loading || !hasMore || cursorWcId === null) return;
 
     setLoading(true);
     setError(null);
-    
+
+    if (process.env.NODE_ENV === "development") {
+      console.debug("[LoadMore] cursorWcId=", cursorWcId);
+    }
+
     try {
       const url = new URL("/api/products", window.location.origin);
       url.searchParams.set("limit", String(limit));
-      if (cursor !== null) {
-        url.searchParams.set("cursor", String(cursor));
-      }
+      url.searchParams.set("cursor", String(cursorWcId));
       if (categorySlug) {
         url.searchParams.set("categorySlug", categorySlug);
       }
@@ -99,25 +101,23 @@ export function LoadMoreGrid({
       const data = await response.json();
       const { products: newProducts, nextCursor } = data;
 
-      // Dedup: Mevcut ürünlerin wcId'lerini Set'e al
+      if (newProducts.length === 0 && nextCursor !== null) {
+        console.warn("[LoadMoreGrid] Anomali: 0 ürün döndü ama nextCursor var", { nextCursor });
+      }
+
       const existingWcIds = new Set(
         products
           .map((p) => p.wcId)
           .filter((id): id is number => id !== undefined)
       );
-
-      // Yeni gelen ürünleri filtrele: wcId yoksa veya mevcut listede yoksa ekle
       const uniqueNewProducts = newProducts.filter((product: Product) => {
-        if (product.wcId === undefined) return true; // wcId yoksa ekle (fallback)
+        if (product.wcId === undefined) return true;
         return !existingWcIds.has(product.wcId);
       });
 
       setProducts((prev) => [...prev, ...uniqueNewProducts]);
-      setCursor(nextCursor);
-      
-      if (nextCursor === null) {
-        setDone(true);
-      }
+      setCursorWcId(nextCursor);
+      setHasMore(nextCursor !== null);
     } catch (error) {
       console.error("Load more error:", error);
       setError("Bir hata oldu, tekrar dene");
@@ -136,7 +136,7 @@ export function LoadMoreGrid({
         </div>
       )}
       
-      {!done && (
+      {hasMore && (
         <div className="flex justify-center pt-4">
           <button
             onClick={handleLoadMore}
@@ -148,7 +148,7 @@ export function LoadMoreGrid({
         </div>
       )}
       
-      {done && products.length > 0 && (
+      {!hasMore && products.length > 0 && (
         <div className="text-center text-sm text-muted-foreground pt-4">
           Tüm ürünler gösterildi
         </div>

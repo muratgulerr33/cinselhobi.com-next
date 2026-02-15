@@ -79,3 +79,24 @@ data/snapshots/sample/
 
 # local db dumps
 *.dump
+
+# local stockout slug list (do not commit)
+stockout-slugs.local.txt
+
+# seo exports (generated); keep README in repo
+seo_exports/*
+!seo_exports/nextjs/
+seo_exports/nextjs/*
+!seo_exports/nextjs/v1/
+seo_exports/nextjs/v1/*
+!seo_exports/nextjs/v1/README.md
+
+# --- local exports / generated stuff (DO NOT COMMIT) ---
+/seo_exports/
+/seoexports/
+/docs/
+
+# --- local-only folders (DO NOT COMMIT) ---
+/assets/
+/data/
+/scripts/

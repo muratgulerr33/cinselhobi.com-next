@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Metadata } from "next";
 import { getProductBySlug, getPrimaryCategoryForBreadcrumb } from "@/db/queries/catalog";
 import { ProductView, ProductType } from "@/components/product/product-view";
@@ -9,6 +9,11 @@ import { eq } from "drizzle-orm";
 import { getCanonicalBaseUrl } from "@/lib/seo/canonical";
 
 export const revalidate = 600;
+
+/** Yanlış slug → canonical slug (308 redirect için). Sadece bu ürün. */
+const SLUG_TYPO_TO_CANONICAL: Record<string, string> = {
+  "pozizyon-zari-siyah": "pozisyon-zari-siyah",
+};
 
 // --- YARDIMCI 1: Fiyat Dönüştürücü ---
 function toNum(val: unknown): number | null {
@@ -57,12 +62,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: "Ürün Bulunamadı" };
   }
 
+  const canonicalSlug = SLUG_TYPO_TO_CANONICAL[slug] ?? product.slug;
+  const baseUrl = getCanonicalBaseUrl();
+
   // HTML'i temizle ve temiz metin al
   const rawDesc = product.shortDescription || product.description || "";
   const cleanDesc = stripHtml(rawDesc);
 
   return {
     title: product.name,
+    alternates: { canonical: `${baseUrl}/urun/${canonicalSlug}` },
     // Temiz metni 160 karakterde kes ve sonuna ... koy
     description: cleanDesc.length > 160 ? cleanDesc.slice(0, 157) + "..." : cleanDesc,
     openGraph: {
@@ -80,7 +89,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 // --- ANA SAYFA (Server Component) ---
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
+
+  if (SLUG_TYPO_TO_CANONICAL[slug]) {
+    permanentRedirect(`/urun/${SLUG_TYPO_TO_CANONICAL[slug]}`);
+  }
+
   const rawProduct = await getProductBySlug(slug);
 
   if (!rawProduct) {
@@ -118,7 +131,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const categoryId = productCats.length > 0 ? productCats[0].categoryId : null;
 
   const baseUrl = getCanonicalBaseUrl();
-  const productUrl = `${baseUrl}/urun/${slug}`;
+  const productUrl = `${baseUrl}/urun/${rawProduct.slug}`;
   const productImages = normalizeImages(rawProduct.images);
   const firstImage = productImages[0]?.src;
   const imageUrl = firstImage?.startsWith("http") ? firstImage : firstImage ? `${baseUrl}${firstImage.startsWith("/") ? "" : "/"}${firstImage}` : undefined;
@@ -186,7 +199,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <RelatedProducts
           productId={Number(rawProduct.id)}
           categoryId={categoryId}
-          slug={slug}
+          slug={rawProduct.slug}
         />
       </div>
     </>

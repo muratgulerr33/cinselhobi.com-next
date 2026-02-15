@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useEffect, useState } from "react";
+
+function subscribeMounted() {
+  return () => {};
+}
+function getServerSnapshot() {
+  return false;
+}
+function getClientSnapshot() {
+  return true;
+}
 import { Search, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHeaderContext } from "./header-context";
@@ -59,8 +69,7 @@ export function HeaderContent() {
   const { title, categoryInfo, catalogParams } = useHeaderContext();
   const { openSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(subscribeMounted, getServerSnapshot, getClientSnapshot);
   const showTitle = mounted && Boolean(title);
 
   const { sort, minPrice, maxPrice, inStock, subCategoryIds } = catalogParams;

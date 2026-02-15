@@ -37,6 +37,9 @@ function toLastmod(d: Date | null | undefined): string {
 /** Tek sitemap ~50k URL limiti. Aşılırsa sitemap index + sitemap-1.xml, sitemap-2.xml ... chunk'lamaya geçilebilir. */
 const SITEMAP_URL_LIMIT = 50_000;
 
+/** Yanlış/typo slug'lar sitemap'e alınmaz; canonical tek girer (308 ile yönlendiriliyor). */
+const SITEMAP_EXCLUDE_TYPO_SLUGS = new Set<string>(["pozizyon-zari-siyah"]);
+
 export async function GET(): Promise<Response> {
   const baseUrl = getCanonicalBaseUrl();
   const seen = new Set<string>();
@@ -76,10 +79,11 @@ export async function GET(): Promise<Response> {
     add(`${baseUrl}/${encodeURIComponent(slug)}`, toLastmod(updatedAt), "weekly", "0.6");
   }
 
-  // --- Ürünler (DB) — /urun/[slug] ---
+  // --- Ürünler (DB) — /urun/[slug] (sadece canonical; typo slug'lar 308 ile yönlendiriliyor, sitemap'e girmez) ---
   const productSlugs = await getAllProductSlugsForSitemap();
   for (const { slug, updatedAt } of productSlugs) {
     if (!isValidSlug(slug)) continue;
+    if (SITEMAP_EXCLUDE_TYPO_SLUGS.has(slug)) continue;
     add(`${baseUrl}/urun/${encodeURIComponent(slug)}`, toLastmod(updatedAt), "weekly", "0.7");
   }
 

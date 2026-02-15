@@ -191,7 +191,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     subCategoryIds,
   });
 
-  const initialCursor = getNextCursor(initialProducts, PRODUCTS_PER_PAGE);
+  const initialNextCursor = getNextCursor(initialProducts, PRODUCTS_PER_PAGE);
 
   const baseUrl = getCanonicalBaseUrl();
   const categoryUrl = `${baseUrl}/${slug}`;
@@ -243,7 +243,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <LoadMoreGrid
             key={`${slug}|${sort}|${minPriceParam ?? ""}|${maxPriceParam ?? ""}|${inStockParam ?? ""}|${subParam ?? ""}|${intent}`}
             initialProducts={initialProducts}
-            initialCursor={initialCursor}
+            initialNextCursor={initialNextCursor}
             limit={PRODUCTS_PER_PAGE}
             categorySlug={slug}
             sort={sort}

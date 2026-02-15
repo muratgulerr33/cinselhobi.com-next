@@ -1,23 +1,9 @@
-import { getLatestProductsCursor } from "@/db/queries/catalog";
+import { getLatestProductsCursor, getNextCursor } from "@/db/queries/catalog";
 import { LoadMoreGrid } from "@/components/catalog/load-more-grid";
 import { HomeHubGrid } from "@/components/home/home-hub-grid";
 import { FeaturedBanners } from "@/components/home/featured-banners";
 
 export const revalidate = 600;
-
-type CursorProduct = { id?: number; wcId?: number };
-
-function getNextCursor(products: CursorProduct[], limit: number): number | null {
-  // If we fetched fewer than `limit`, there is no next page.
-  if (products.length < limit) return null;
-
-  const last = products[products.length - 1];
-  // Prefer DB id; fallback to WooCommerce id if that's what the query returns.
-  const cursor = last?.id ?? last?.wcId ?? null;
-
-  // If cursor is missing for some reason, stop pagination safely.
-  return typeof cursor === "number" ? cursor : null;
-}
 
 export default async function HomePage() {
   // Home: "Yeni Ürünler" listesi cursor-based pagination ile gelir (Load More).
@@ -25,7 +11,7 @@ export default async function HomePage() {
   const limit = 20;
 
   const initialProducts = await getLatestProductsCursor({ limit, userId: null });
-  const initialCursor = getNextCursor(initialProducts, limit);
+  const initialNextCursor = getNextCursor(initialProducts, limit);
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-6 pb-20 sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-screen-2xl">
@@ -42,7 +28,7 @@ export default async function HomePage() {
         <div className="mt-4">
           <LoadMoreGrid
             initialProducts={initialProducts}
-            initialCursor={initialCursor}
+            initialNextCursor={initialNextCursor}
             limit={limit}
           />
         </div>

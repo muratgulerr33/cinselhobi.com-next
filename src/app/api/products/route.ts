@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
   
   const searchParams = request.nextUrl.searchParams;
   const limitParam = searchParams.get("limit");
-  const cursorParam = searchParams.get("cursor");
+  // Cursor = wcId (legacy WooCommerce id). Accept both names for clarity and backward compat.
+  const cursorParam = searchParams.get("cursorWcId") ?? searchParams.get("cursor");
   const categorySlug = searchParams.get("categorySlug");
   const sortParam = searchParams.get("sort");
   const minPriceParam = searchParams.get("min");
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Cursor'ı parse et
+  // Cursor = wcId (orderBy wcId DESC, WHERE wcId < cursor). Parse cursorWcId or cursor.
   let cursor: number | null = null;
   if (cursorParam) {
     const parsed = Number(cursorParam);

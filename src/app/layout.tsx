@@ -34,7 +34,31 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const canonicalBase = getCanonicalBaseUrl();
+// Canonical URL'yi tek bir formata sabitle (www + https, trailing slash yok)
+// Not: www yalnızca apex domainlerde (example.com, example.com.tr gibi) zorlanır;
+// api.example.com gibi subdomainlerde dokunulmaz.
+const canonicalBase = (() => {
+  const raw = getCanonicalBaseUrl();
+  try {
+    const u = new URL(raw);
+    const hostParts = u.hostname.split(".");
+    const isLocalhost = u.hostname === "localhost" || u.hostname.endsWith(".localhost");
+    const isIp = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(u.hostname);
+    const isApex = hostParts.length === 2 || (u.hostname.endsWith(".com.tr") && hostParts.length === 3);
+    
+    if (!isLocalhost && !isIp && isApex && !u.hostname.startsWith("www.")) {
+      u.hostname = `www.${u.hostname}`;
+    }
+
+    // build-time'ta güvenli olması için https'e zorla (localhost/IP hariç)
+    if (!isLocalhost && !isIp) u.protocol = "https:";
+
+    // trailing slash kaldır
+    return u.toString().replace(/\/+$/, "");
+  } catch {
+    return raw;
+  }
+})();
 
 const siteStructuredData = {
   "@context": "https://schema.org",
@@ -62,6 +86,7 @@ const siteStructuredData = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(canonicalBase),
+  alternates: { canonical: "./" },
   title: {
     default: "Cinselhobi",
     template: "%s | Cinselhobi",

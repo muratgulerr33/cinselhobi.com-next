@@ -32,7 +32,8 @@
     "seo:v1:all": "npm run export:seo:v1 && npm run seo:nginx:v1",
     "seo:deploy:nginx:v1": "bash scripts/seo/deploy_nginx_snippets_v1.sh",
     "seo:v1:ship": "npm run seo:v1:all && npm run seo:deploy:nginx:v1",
-    "seo:test:v1": "python3 scripts/seo/smoke_test_v1.py"
+    "seo:test:v1": "python3 scripts/seo/smoke_test_v1.py",
+    "gen:icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -82,6 +83,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "png-to-ico": "^3.0.1",
+    "sharp": "^0.33.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
