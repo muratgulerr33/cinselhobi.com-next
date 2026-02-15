@@ -60,6 +60,12 @@ const nextConfig: NextConfig = {
         destination: "/urun/okey-ritim-prezervatif-10lu",
         permanent: true, // 308 redirect
       },
+      // Typo ürün canonical redirect (402 → 143)
+      {
+        source: "/urun/pozizyon-zari-siyah",
+        destination: "/urun/pozisyon-zari-siyah",
+        permanent: true, // 308
+      },
     ];
   },
 };
