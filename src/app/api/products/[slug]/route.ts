@@ -56,13 +56,13 @@ export async function GET(
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  // Öncelik: DB images (array, en az 1 eleman) varsa onu kullan; wp-content fallback yok.
+  // Görsel kaynağı SADECE product.images. raw fallback / cover.webp / g1.webp yok.
   const dbImages = product.images;
   const useDbImages =
     Array.isArray(dbImages) && dbImages.length >= 1;
   const images = useDbImages
     ? normalizeImages(dbImages)
-    : normalizeImages(product.images);
+    : [];
 
   // LOCAL debug only (prod'a taşınmayacak)
   if (process.env.NODE_ENV === "development") {

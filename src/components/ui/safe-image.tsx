@@ -4,10 +4,17 @@ import * as React from "react";
 import Image, { ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
+/** Sadece string src'lerde wp-content kontrolü. Object (StaticImport) için kullanma. */
+function isWpContentUrl(src: string): boolean {
+  return /wp-content\/uploads/i.test(src);
+}
+
 /**
  * Next/Image wrapper that avoids optimizer errors on 404 (e.g. WP upstream).
- * Uses unoptimized so the request does not go through Next image optimizer;
- * onError shows a placeholder so the UI does not break.
+ * - wp-content URL'lerini render etmez (placeholder'a düşer)
+ * - src StaticImport (object) ise ASLA blocked yapılmaz
+ * - src boş string / null ise placeholder
+ * - unoptimized ile Next optimizer'a sokmaz
  */
 export function SafeImage({
   src,
@@ -20,6 +27,13 @@ export function SafeImage({
 }: ImageProps) {
   const [failed, setFailed] = React.useState(false);
 
+  const blocked = React.useMemo(() => {
+    if (typeof src !== "string") return false;
+    return isWpContentUrl(src);
+  }, [src]);
+
+  const noSrc = src == null || (typeof src === "string" && src.trim() === "");
+
   const handleError = React.useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       setFailed(true);
@@ -28,7 +42,7 @@ export function SafeImage({
     [onError]
   );
 
-  if (failed) {
+  if (failed || blocked || noSrc) {
     return (
       <div
         className={cn(

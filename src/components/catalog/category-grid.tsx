@@ -28,16 +28,21 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
           href={`/${category.slug}`}
           className="rounded-2xl border border-border bg-card p-4 text-card-foreground transition-transform active:scale-[0.98]"
         >
-          {category.imageUrl ? (
-            <img
-              src={category.imageUrl}
-              alt={category.name}
-              className="mb-3 h-32 w-full rounded-xl object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="mb-3 h-32 w-full rounded-xl bg-muted" />
-          )}
+          {(() => {
+            const src = category.imageUrl;
+            const isWp = typeof src === "string" && src.includes("/wp-content/uploads/");
+            if (!src || isWp) {
+              return <div className="mb-3 h-32 w-full rounded-xl bg-muted" />;
+            }
+            return (
+              <img
+                src={src}
+                alt={category.name}
+                className="mb-3 h-32 w-full rounded-xl object-cover"
+                loading="lazy"
+              />
+            );
+          })()}
           <div className="font-medium">{normalizeCategoryName(category.name)}</div>
         </Link>
       ))}
