@@ -1,6 +1,6 @@
 import { db } from "@/db/connection";
 import { orders, orderItems, products, users, userAddresses } from "@/db/schema";
-import { eq, desc, and, count, sum, sql } from "drizzle-orm";
+import { eq, desc, and, count, sum, ilike, or, lt, type SQL } from "drizzle-orm";
 
 export interface AdminStats {
   totalOrders: number;
@@ -68,6 +68,112 @@ export async function getAllOrders(): Promise<AdminOrderListItem[]> {
 
   return result;
 }
+
+export type AdminProductStockFilter = "all" | "instock" | "outofstock";
+export const ADMIN_PRODUCT_LIMIT_OPTIONS = [25, 50, 100, 250, 500, 1000] as const;
+export type AdminProductLimit = (typeof ADMIN_PRODUCT_LIMIT_OPTIONS)[number];
+export const DEFAULT_ADMIN_PRODUCT_LIMIT: AdminProductLimit = 50;
+
+const ADMIN_PRODUCT_LIMIT_SET = new Set<number>(ADMIN_PRODUCT_LIMIT_OPTIONS);
+
+function normalizeAdminProductLimit(limit: number | undefined): AdminProductLimit {
+  if (typeof limit === "number" && ADMIN_PRODUCT_LIMIT_SET.has(limit)) {
+    return limit as AdminProductLimit;
+  }
+  return DEFAULT_ADMIN_PRODUCT_LIMIT;
+}
+
+export interface AdminProductsCursor {
+  updatedAt: Date;
+  id: number;
+}
+
+export interface GetAdminProductsOptions {
+  q?: string;
+  stock?: AdminProductStockFilter;
+  limit?: number;
+  cursor?: AdminProductsCursor;
+}
+
+export interface AdminProductListItem {
+  id: number;
+  name: string;
+  slug: string;
+  price: number | null;
+  stockStatus: string | null;
+  stockQuantity: number | null;
+  images: unknown;
+  updatedAt: Date;
+}
+
+export interface AdminProductListResult {
+  items: AdminProductListItem[];
+  hasNext: boolean;
+  nextCursor: AdminProductsCursor | null;
+}
+
+export async function adminListProducts(
+  options: GetAdminProductsOptions = {}
+): Promise<AdminProductListResult> {
+  const q = (options.q ?? "").trim();
+  const stock = (options.stock ?? "all") as AdminProductStockFilter;
+  const limit = normalizeAdminProductLimit(options.limit);
+  const fetchLimit = limit + 1;
+  const whereParts: SQL[] = [];
+
+  if (q) {
+    const like = `%${q}%`;
+    const nameOrSlug = or(ilike(products.name, like), ilike(products.slug, like));
+    if (nameOrSlug) {
+      whereParts.push(nameOrSlug);
+    }
+  }
+
+  if (stock === "instock") whereParts.push(eq(products.stockStatus, "instock"));
+  if (stock === "outofstock") whereParts.push(eq(products.stockStatus, "outofstock"));
+
+  if (options.cursor) {
+    const cursorCondition = or(
+      lt(products.updatedAt, options.cursor.updatedAt),
+      and(eq(products.updatedAt, options.cursor.updatedAt), lt(products.id, options.cursor.id))
+    );
+    if (cursorCondition) {
+      whereParts.push(cursorCondition);
+    }
+  }
+
+  const where = whereParts.length > 0 ? and(...whereParts) : undefined;
+
+  const rows = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      slug: products.slug,
+      price: products.price,
+      stockStatus: products.stockStatus,
+      stockQuantity: products.stockQuantity,
+      images: products.images,
+      updatedAt: products.updatedAt,
+    })
+    .from(products)
+    .where(where)
+    .orderBy(desc(products.updatedAt), desc(products.id))
+    .limit(fetchLimit);
+
+  const hasNext = rows.length > limit;
+  const items = hasNext ? rows.slice(0, limit) : rows;
+  const lastItem = items[items.length - 1];
+
+  return {
+    items,
+    hasNext,
+    nextCursor: hasNext && lastItem
+      ? { updatedAt: lastItem.updatedAt, id: lastItem.id }
+      : null,
+  };
+}
+
+export const getAdminProducts = adminListProducts;
 
 export interface AdminOrderDetail {
   id: string;
@@ -167,4 +273,3 @@ export async function getAdminOrderDetail(orderId: string): Promise<AdminOrderDe
     orderItems: items,
   };
 }
-
