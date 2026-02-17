@@ -1,13 +1,12 @@
 import { getAllOrders } from "@/db/queries/admin";
 import { formatPriceCents, formatDate } from "@/lib/format";
+import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/admin/order-status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-function getStatusBadgeVariant(
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-) {
+function getStatusBadgeVariant(status: OrderStatus) {
   switch (status) {
     case "pending":
       return "warning";
@@ -24,23 +23,8 @@ function getStatusBadgeVariant(
   }
 }
 
-function getStatusLabel(
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-) {
-  switch (status) {
-    case "pending":
-      return "Beklemede";
-    case "processing":
-      return "İşleniyor";
-    case "shipped":
-      return "Kargoda";
-    case "delivered":
-      return "Teslim Edildi";
-    case "cancelled":
-      return "İptal Edildi";
-    default:
-      return status;
-  }
+function getStatusLabel(status: OrderStatus) {
+  return ORDER_STATUS_LABELS[status];
 }
 
 function getPaymentMethodLabel(method: "credit_card" | "cod") {
@@ -167,4 +151,3 @@ export default async function AdminOrdersPage() {
     </div>
   );
 }
-

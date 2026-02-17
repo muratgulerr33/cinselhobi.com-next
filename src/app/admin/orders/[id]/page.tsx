@@ -2,17 +2,15 @@ import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import { getAdminOrderDetail } from "@/db/queries/admin";
 import { formatPriceCents, formatDate, getPrimaryImageUrl } from "@/lib/format";
+import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/admin/order-status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { SafeImage } from "@/components/ui/safe-image";
-import { updateOrderStatus } from "@/actions/admin";
 import { OrderStatusUpdateForm } from "@/components/admin/order-status-form";
 
-function getStatusBadgeVariant(
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-) {
+function getStatusBadgeVariant(status: OrderStatus) {
   switch (status) {
     case "pending":
       return "warning";
@@ -29,23 +27,8 @@ function getStatusBadgeVariant(
   }
 }
 
-function getStatusLabel(
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
-) {
-  switch (status) {
-    case "pending":
-      return "Beklemede";
-    case "processing":
-      return "İşleniyor";
-    case "shipped":
-      return "Kargoda";
-    case "delivered":
-      return "Teslim Edildi";
-    case "cancelled":
-      return "İptal Edildi";
-    default:
-      return status;
-  }
+function getStatusLabel(status: OrderStatus) {
+  return ORDER_STATUS_LABELS[status];
 }
 
 function getPaymentMethodLabel(method: "credit_card" | "cod") {
@@ -240,4 +223,3 @@ export default async function AdminOrderDetailPage({
     </div>
   );
 }
-

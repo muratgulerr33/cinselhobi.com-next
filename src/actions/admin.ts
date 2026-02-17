@@ -3,11 +3,12 @@
 import { auth } from "@/auth";
 import { db } from "@/db/connection";
 import { orders } from "@/db/schema";
+import { ORDER_STATUS, type OrderStatus } from "@/lib/admin/order-status";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+export type { OrderStatus } from "@/lib/admin/order-status";
 
 export interface UpdateOrderStatusResult {
   success: boolean;
@@ -16,7 +17,7 @@ export interface UpdateOrderStatusResult {
 
 const updateOrderStatusSchema = z.object({
   orderId: z.string().uuid(),
-  newStatus: z.enum(["pending", "processing", "shipped", "delivered", "cancelled"]),
+  newStatus: z.enum(ORDER_STATUS),
 });
 
 export async function updateOrderStatus(
@@ -83,4 +84,3 @@ export async function updateOrderStatus(
     };
   }
 }
-

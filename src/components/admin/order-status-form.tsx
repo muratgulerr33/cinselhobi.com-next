@@ -2,21 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { OrderStatus, updateOrderStatus } from "@/actions/admin";
+import { updateOrderStatus } from "@/actions/admin";
+import { ORDER_STATUS_OPTIONS, type OrderStatus } from "@/lib/admin/order-status";
 import { useRouter } from "next/navigation";
 
 interface OrderStatusUpdateFormProps {
   orderId: string;
   currentStatus: OrderStatus;
 }
-
-const statusOptions: { value: OrderStatus; label: string }[] = [
-  { value: "pending", label: "Beklemede" },
-  { value: "processing", label: "İşleniyor" },
-  { value: "shipped", label: "Kargoda" },
-  { value: "delivered", label: "Teslim Edildi" },
-  { value: "cancelled", label: "İptal Edildi" },
-];
 
 export function OrderStatusUpdateForm({
   orderId,
@@ -39,7 +32,7 @@ export function OrderStatusUpdateForm({
 
     startTransition(async () => {
       const result = await updateOrderStatus(orderId, selectedStatus);
-      
+
       if (result.success) {
         setSuccess(true);
         router.refresh();
@@ -67,7 +60,7 @@ export function OrderStatusUpdateForm({
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={isPending}
         >
-          {statusOptions.map((option) => (
+          {ORDER_STATUS_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -97,4 +90,3 @@ export function OrderStatusUpdateForm({
     </form>
   );
 }
-

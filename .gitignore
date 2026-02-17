@@ -100,3 +100,7 @@ seo_exports/nextjs/v1/*
 /assets/
 /data/
 /scripts/
+
+# Local dev artifacts (do not commit)
+/seo/
+/discovery/

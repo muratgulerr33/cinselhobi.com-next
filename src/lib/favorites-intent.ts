@@ -30,8 +30,9 @@ export function saveFavoriteIntent(intent: FavoriteIntent): void {
  * @returns Intent varsa ve geçerliyse intent, yoksa null
  */
 export function getFavoriteIntent(): FavoriteIntent | null {
+  if (typeof window === "undefined") return null;
   try {
-    const stored = localStorage.getItem(INTENT_KEY);
+    const stored = window.localStorage.getItem(INTENT_KEY);
     if (!stored) {
       return null;
     }
@@ -42,7 +43,7 @@ export function getFavoriteIntent(): FavoriteIntent | null {
 
     // TTL kontrolü: 15 dakikadan eski intent'leri ignore et
     if (age > TTL_MS) {
-      localStorage.removeItem(INTENT_KEY);
+      window.localStorage.removeItem(INTENT_KEY);
       return null;
     }
 
