@@ -22,21 +22,31 @@ const categoryTree = getCategoryTreeFromHubMap();
 
 // Nav link class (düz linkler için)
 const NAV_LINK_CLASS = "text-sm font-medium text-foreground transition-colors hover:text-primary";
+const CATEGORIES_TRIGGER_ID = "desktop-nav-categories-trigger";
+const CATEGORIES_CONTENT_ID = "desktop-nav-categories-content";
 
 export function DesktopNavigation() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeCategory = categoryTree[activeIndex];
 
   return (
-    <NavigationMenu>
+    <NavigationMenu viewport={false}>
       <NavigationMenuList className="gap-6">
         {/* 1. Kategoriler - Mega Menu (Dropdown) */}
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className={cn(navigationMenuTriggerStyle(), "text-sm font-medium [&>svg:last-child]:hidden")}>
+        <NavigationMenuItem value="kategoriler">
+          <NavigationMenuTrigger
+            id={CATEGORIES_TRIGGER_ID}
+            aria-controls={CATEGORIES_CONTENT_ID}
+            className={cn(navigationMenuTriggerStyle(), "text-sm font-medium [&>svg:last-child]:hidden")}
+          >
             Kategoriler
             <Icons.down className="ml-1 h-3 w-3 transition-transform duration-300 group-data-[state=open]/navigation-menu:rotate-180" />
           </NavigationMenuTrigger>
-          <NavigationMenuContent className="rounded-xl border border-border bg-background shadow-xl p-6 w-[900px] max-w-[calc(100vw-3rem)]">
+          <NavigationMenuContent
+            id={CATEGORIES_CONTENT_ID}
+            aria-labelledby={CATEGORIES_TRIGGER_ID}
+            className="rounded-xl border border-border bg-background shadow-xl p-6 w-[900px] max-w-[calc(100vw-3rem)]"
+          >
             <div className="grid gap-6 grid-cols-[minmax(280px,300px)_minmax(420px,1fr)] items-start">
               {/* Sol Kolon: Parent Kategori Listesi */}
               <div className="pr-4 border-r border-border space-y-1 min-w-0">
@@ -98,7 +108,7 @@ export function DesktopNavigation() {
         </NavigationMenuItem>
 
         {/* 2. Kadınlara Özel - Düz Link */}
-        <NavigationMenuItem>
+        <NavigationMenuItem value="kadinlara-ozel-link">
           <NavigationMenuLink asChild>
             <Link href="/kadinlara-ozel" className={NAV_LINK_CLASS}>
               Kadınlara Özel
@@ -107,7 +117,7 @@ export function DesktopNavigation() {
         </NavigationMenuItem>
 
         {/* 3. Erkeklere Özel - Düz Link */}
-        <NavigationMenuItem>
+        <NavigationMenuItem value="erkeklere-ozel-link">
           <NavigationMenuLink asChild>
             <Link href="/erkeklere-ozel" className={NAV_LINK_CLASS}>
               Erkeklere Özel
@@ -116,7 +126,7 @@ export function DesktopNavigation() {
         </NavigationMenuItem>
 
         {/* 4. Geciktiriciler - Düz Link */}
-        <NavigationMenuItem>
+        <NavigationMenuItem value="geciktiriciler-link">
           <NavigationMenuLink asChild>
             <Link href="/geciktiriciler" className={NAV_LINK_CLASS}>
               Geciktiriciler
