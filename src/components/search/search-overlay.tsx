@@ -11,6 +11,7 @@ import { formatPrice, getPrimaryImageUrl } from "@/lib/format";
 import { SearchResultItem } from "./search-result-item";
 import { POPULAR_QUERIES } from "@/lib/search/popular";
 import { useVoiceSearch } from "@/hooks/use-voice-search";
+import { useIsHydrated } from "@/hooks/use-is-hydrated";
 
 const RECENT_SEARCHES_KEY = "ch_recent_searches";
 const MAX_RECENT_SEARCHES = 8;
@@ -63,6 +64,7 @@ function saveRecentSearch(query: string) {
 export function SearchOverlay() {
   const { open, query, setQuery, closeSearch } = useSearch();
   const router = useRouter();
+  const hydrated = useIsHydrated();
   const { isListening, isSupported, startListening } = useVoiceSearch({
     onResult: () => {
       closeSearch(); // Dialog'u kapatır
@@ -78,13 +80,19 @@ export function SearchOverlay() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [vvh, setVvh] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const shouldShowVoiceButton = hydrated && isSupported;
 
   // Recent searches'i yükle
   useEffect(() => {
-    if (open) {
-      setRecentSearches(getRecentSearches());
+    if (!open) {
+      setRecentSearches([]);
+      return;
     }
-  }, [open]);
+    if (!hydrated) {
+      return;
+    }
+    setRecentSearches(getRecentSearches());
+  }, [open, hydrated]);
 
   // VisualViewport fallback (Android/iOS keyboard animasyonu)
   useEffect(() => {
@@ -94,15 +102,13 @@ export function SearchOverlay() {
     }
 
     const update = () => {
-      if (typeof window !== "undefined") {
-        const vv = window.visualViewport;
-        setVvh(vv?.height ?? window.innerHeight);
-      }
+      const vv = window.visualViewport;
+      setVvh(vv?.height ?? window.innerHeight);
     };
 
     update();
 
-    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    const vv = window.visualViewport;
     if (vv) {
       vv.addEventListener("resize", update);
       vv.addEventListener("scroll", update);
@@ -276,7 +282,7 @@ export function SearchOverlay() {
                     className="h-10 w-full rounded-xl border border-input bg-muted/50 pl-10 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     aria-label="Arama"
                   />
-                  {isSupported && (
+                  {shouldShowVoiceButton && (
                     <button
                       type="button"
                       onClick={startListening}
@@ -433,4 +439,3 @@ export function SearchOverlay() {
     </Dialog>
   );
 }
-

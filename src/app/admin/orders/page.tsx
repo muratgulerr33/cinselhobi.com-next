@@ -1,31 +1,22 @@
 import { getAllOrders } from "@/db/queries/admin";
 import { formatPriceCents, formatDate } from "@/lib/format";
-import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/admin/order-status";
+import {
+  getAdminOrderStatusBadgeVariant,
+  getAdminOrderStatusLabel,
+} from "@/lib/admin/status-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { z } from "zod";
 
-function getStatusBadgeVariant(status: OrderStatus) {
-  switch (status) {
-    case "pending":
-      return "warning";
-    case "processing":
-      return "info";
-    case "shipped":
-      return "info";
-    case "delivered":
-      return "success";
-    case "cancelled":
-      return "destructive";
-    default:
-      return "secondary";
-  }
+interface AdminOrdersPageProps {
+  searchParams: Promise<{
+    userId?: string | string[];
+  }>;
 }
 
-function getStatusLabel(status: OrderStatus) {
-  return ORDER_STATUS_LABELS[status];
-}
+const userIdSchema = z.string().trim().min(1).max(255).catch("");
 
 function getPaymentMethodLabel(method: "credit_card" | "cod") {
   switch (method) {
@@ -42,8 +33,17 @@ function formatOrderId(orderId: string) {
   return orderId.substring(0, 8).toUpperCase();
 }
 
-export default async function AdminOrdersPage() {
-  const orders = await getAllOrders();
+function getFirstParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0] ?? "";
+  }
+  return value ?? "";
+}
+
+export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
+  const params = await searchParams;
+  const userId = userIdSchema.parse(getFirstParam(params.userId));
+  const orders = await getAllOrders({ userId: userId || undefined });
 
   return (
     <div className="space-y-6">
@@ -54,13 +54,24 @@ export default async function AdminOrdersPage() {
         </p>
       </div>
 
+      {userId ? (
+        <div className="rounded-lg border border-border bg-card px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Bu liste müşteri filtresiyle gösteriliyor.
+          </p>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/orders">Filtreyi Temizle</Link>
+          </Button>
+        </div>
+      ) : null}
+
       {orders.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-lg font-medium text-foreground">
-            Henüz sipariş yok
+            {userId ? "Kayıt bulunamadı" : "Henüz sipariş yok"}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Siparişler burada görüntülenecek.
+            {userId ? "Seçili müşteriye ait sipariş bulunamadı." : "Siparişler burada görüntülenecek."}
           </p>
         </div>
       ) : (
@@ -119,10 +130,10 @@ export default async function AdminOrdersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Badge
-                        variant={getStatusBadgeVariant(order.status)}
+                        variant={getAdminOrderStatusBadgeVariant(order.status)}
                         className="text-xs"
                       >
-                        {getStatusLabel(order.status)}
+                        {getAdminOrderStatusLabel(order.status)}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">

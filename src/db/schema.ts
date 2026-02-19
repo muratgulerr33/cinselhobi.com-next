@@ -26,8 +26,11 @@ export const products = pgTable("products", {
   currency: text("currency").default("TRY").notNull(),
   shortDescription: text("short_description"),
   description: text("description"),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
   stockStatus: text("stock_status"),
   stockQuantity: integer("stock_quantity"),
+  crossSellIds: integer("cross_sell_ids").array(),
   images: jsonb("images"),
   raw: jsonb("raw").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -170,4 +173,3 @@ export const orderItems = pgTable("order_items", {
   quantity: integer("quantity").notNull(),
   price: integer("price").notNull(), // kuruş cinsinden - o anki satış fiyatı
 });
-

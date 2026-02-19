@@ -18,7 +18,6 @@ import {
 import { LayoutRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { getMobileTabIndex, getActiveTabId } from "./mobile-tabs";
 import { consumeTabNavIntent, readTabScroll } from "./tab-scroll";
-import Footer from "./Footer";
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -84,9 +83,6 @@ function ScreenShell({
     >
       <div className="mx-auto w-full min-w-0 max-w-screen-2xl px-4 sm:px-5 md:px-6 lg:px-8 2xl:px-12">
         {children}
-        <div className="xl:hidden">
-          <Footer />
-        </div>
       </div>
     </div>
   );

@@ -8,11 +8,13 @@ import {
   type AdminProductStockFilter,
   type AdminProductsCursor,
 } from "@/db/queries/admin";
-import { formatPriceCents, getPrimaryImageUrl } from "@/lib/format";
+import { getPrimaryImageUrl } from "@/lib/format";
+import { formatPriceTL } from "@/lib/money/format-price";
 import { SafeImage } from "@/components/ui/safe-image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { CrossSellPicker } from "@/components/admin/cross-sell-picker";
 
 interface AdminProductsPageProps {
   searchParams: Promise<{
@@ -137,9 +139,14 @@ export default async function AdminProductsPage({
             Katalogdaki ürünleri görüntüle
           </p>
         </div>
-        <Button type="button" disabled>
-          Ürün Ekle
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/admin/products/bulk">Toplu Güncelle</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/products/new">Ürün Ekle</Link>
+          </Button>
+        </div>
       </div>
 
       <form method="GET" className="rounded-lg border border-border bg-card p-4">
@@ -226,6 +233,9 @@ export default async function AdminProductsPage({
                   <th className="px-4 py-3 text-left text-sm font-semibold">
                     Stok
                   </th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">
+                    Aksiyon
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -254,7 +264,7 @@ export default async function AdminProductsPage({
                         </p>
                       </td>
                       <td className="px-4 py-3 text-sm font-semibold">
-                        {formatPriceCents(product.price)}
+                        {formatPriceTL(product.price)}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex flex-col gap-1">
@@ -269,6 +279,20 @@ export default async function AdminProductsPage({
                               Adet: {product.stockQuantity}
                             </span>
                           )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}/edit`}>
+                              Düzenle
+                            </Link>
+                          </Button>
+                          <CrossSellPicker
+                            productId={product.id}
+                            productSlug={product.slug}
+                            initialSelectedIds={product.crossSellIds}
+                          />
                         </div>
                       </td>
                     </tr>

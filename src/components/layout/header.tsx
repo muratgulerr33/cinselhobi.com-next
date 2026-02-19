@@ -2,23 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useSyncExternalStore, useEffect, useState } from "react";
-
-function subscribeMounted() {
-  return () => {};
-}
-function getServerSnapshot() {
-  return false;
-}
-function getClientSnapshot() {
-  return true;
-}
+import { useEffect, useState } from "react";
 import { Search, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHeaderContext } from "./header-context";
 import { useSearch } from "@/components/search/search-provider";
 import { CatalogControls } from "@/components/catalog/catalog-controls";
 import { ShareButton } from "@/components/common/share-button";
+
+const HEADER_BRAND_TITLE = "CİNSELHOBİ";
 
 const RESERVED_SLUGS = [
   "account",
@@ -69,10 +61,19 @@ export function HeaderContent() {
   const { title, categoryInfo, catalogParams } = useHeaderContext();
   const { openSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
-  const mounted = useSyncExternalStore(subscribeMounted, getServerSnapshot, getClientSnapshot);
+  const [mounted, setMounted] = useState(false);
   const showTitle = mounted && Boolean(title);
+  const effectiveTitle = showTitle ? title : null;
+  const headerText = effectiveTitle ?? HEADER_BRAND_TITLE;
 
   const { sort, minPrice, maxPrice, inStock, subCategoryIds } = catalogParams;
+
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   // Mount anında scrolled state'i doğru set et
   useEffect(() => {
@@ -157,20 +158,26 @@ export function HeaderContent() {
             )}
           </div>
 
-          {/* Orta — SSR + ilk CSR aynı markup (hydration mismatch önlemi): her zaman h1, içerik mounted sonrası title/Link */}
+          {/* Orta — SSR ve ilk CSR aynı metin: mount sonrası dinamik title'a geç */}
           <div className="flex-1 min-w-0 flex items-center justify-center px-2">
-            <h1 className="min-w-0 max-w-full truncate text-sm font-semibold tracking-wide text-center">
-              {showTitle ? (
-                title
-              ) : (
-                <Link
-                  href="/"
-                  className="min-w-0 max-w-full truncate text-sm font-semibold tracking-[0.2em] uppercase"
-                >
-                  CİNSELHOBİ
-                </Link>
+            <Link
+              href="/"
+              aria-disabled={Boolean(effectiveTitle)}
+              tabIndex={effectiveTitle ? -1 : 0}
+              className={cn(
+                "min-w-0 max-w-full",
+                effectiveTitle && "pointer-events-none"
               )}
-            </h1>
+            >
+              <h1
+                className={cn(
+                  "min-w-0 max-w-full truncate text-center text-sm font-semibold",
+                  effectiveTitle ? "tracking-wide" : "uppercase tracking-[0.2em]"
+                )}
+              >
+                {headerText}
+              </h1>
+            </Link>
           </div>
 
           {/* Sağ */}
@@ -185,8 +192,8 @@ export function HeaderContent() {
                 initialInStock={inStock}
                 initialSubCategoryIds={subCategoryIds}
               />
-            ) : isProductDetail && showTitle ? (
-              <ShareButton title={title!} />
+            ) : isProductDetail && effectiveTitle ? (
+              <ShareButton title={effectiveTitle} />
             ) : showSearch ? (
               <button
                 type="button"

@@ -2,10 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, Home } from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Home,
+  CreditCard,
+  BarChart3,
+  Users,
+  Settings,
+} from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const adminNavItems = [
+interface AdminNavItem {
+  href: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  disabled?: boolean;
+}
+
+const adminNavItems: AdminNavItem[] = [
   {
     href: "/admin",
     label: "Dashboard",
@@ -20,6 +38,26 @@ const adminNavItems = [
     href: "/admin/products",
     label: "Ürünler",
     icon: Package,
+  },
+  {
+    href: "/admin/payments",
+    label: "Ödemeler",
+    icon: CreditCard,
+  },
+  {
+    href: "/admin/reports",
+    label: "Raporlar",
+    icon: BarChart3,
+  },
+  {
+    href: "/admin/customers",
+    label: "Müşteriler",
+    icon: Users,
+  },
+  {
+    href: "/admin/settings",
+    label: "Ayarlar",
+    icon: Settings,
     disabled: true,
   },
   {
@@ -41,32 +79,30 @@ export function AdminSidebar() {
         {adminNavItems.map((item) => {
           const Icon = item.icon;
           const isExternal = item.href.startsWith("http");
-          const isActive = !isExternal && pathname === item.href;
-          
-          if (item.disabled) {
-            return (
-              <div
-                key={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium",
-                  "text-muted-foreground cursor-not-allowed opacity-50"
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </div>
-            );
-          }
+          const isSectionRoute = item.href !== "/admin" && item.href !== "/" && !item.disabled;
+          const isActive = !item.disabled && !isExternal && (
+            pathname === item.href ||
+            (isSectionRoute && pathname.startsWith(`${item.href}/`))
+          );
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              aria-disabled={item.disabled ? true : undefined}
               target={isExternal ? "_blank" : undefined}
               rel={isExternal ? "noopener noreferrer" : undefined}
+              onClick={(event) => {
+                if (item.disabled) {
+                  event.preventDefault();
+                  toast.info("V2’de gelecek");
+                }
+              }}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                isActive
+                item.disabled
+                  ? "text-muted-foreground/60 hover:bg-accent/40 hover:text-muted-foreground/80"
+                  : isActive
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-accent hover:text-accent-foreground"
               )}
@@ -80,4 +116,3 @@ export function AdminSidebar() {
     </aside>
   );
 }
-

@@ -4,16 +4,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 // Yeni güncellediğimiz provider
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { HeaderContent } from "@/components/layout/header";
 import { HeaderProvider } from "@/components/layout/header-context";
-import { DesktopHeader } from "@/components/layout/DesktopHeader";
-import Footer from "@/components/app/Footer";
-import { MobileBottomNav } from "@/components/app/mobile-bottom-nav";
-import { PageTransition } from "@/components/app/page-transition";
+import { AppRouteChrome } from "@/components/app/app-route-chrome";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { SearchProvider } from "@/components/search/search-provider";
-import { SearchOverlay } from "@/components/search/search-overlay";
-import { AgeGate } from "@/components/age/age-gate";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { FavoritesProvider } from "@/components/favorites/favorites-provider";
 import { Toaster } from "sonner";
@@ -157,21 +151,7 @@ export default function RootLayout({
               <CartProvider>
                 <HeaderProvider>
                   <SearchProvider>
-                    <div className="min-h-dvh bg-background text-foreground">
-                      <Suspense fallback={<header className="fixed top-0 left-0 right-0 z-50 h-14 xl:h-16 border-b border-border bg-background" />}>
-                        <HeaderContent />
-                      </Suspense>
-                      <DesktopHeader />
-                      <SearchOverlay />
-                      <AgeGate />
-                      <main className="flex-1 overflow-hidden xl:overflow-visible">
-                        <PageTransition>{children}</PageTransition>
-                      </main>
-                      <div className="hidden xl:block">
-                        <Footer />
-                      </div>
-                      <MobileBottomNav />
-                    </div>
+                    <AppRouteChrome>{children}</AppRouteChrome>
                     <Toaster position="top-center" richColors />
                   </SearchProvider>
                 </HeaderProvider>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRelatedProductsBySlug } from "@/db/queries/catalog";
+import { getCrossSellProductsForSlug } from "@/db/queries/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export async function GET(
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
   }
 
-  const relatedProducts = await getRelatedProductsBySlug(slug, 10);
+  const relatedProducts = await getCrossSellProductsForSlug(slug, 10);
 
   const normalized = relatedProducts.map((product) => {
     const images = normalizeImages(product.images);
@@ -65,4 +65,3 @@ export async function GET(
 
   return NextResponse.json(normalized);
 }
-

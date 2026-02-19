@@ -45,16 +45,11 @@ interface SpeechRecognitionAlternative {
   confidence: number;
 }
 
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognition;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: SpeechRecognitionConstructor;
-    webkitSpeechRecognition: SpeechRecognitionConstructor;
-  }
-}
+type SpeechRecognitionCtor = new () => unknown;
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionCtor;
+  webkitSpeechRecognition?: SpeechRecognitionCtor;
+};
 
 interface UseVoiceSearchProps {
   onResult?: (transcript: string) => void; // Opsiyonel callback
@@ -62,12 +57,14 @@ interface UseVoiceSearchProps {
 
 export function useVoiceSearch({ onResult }: UseVoiceSearchProps = {}) {
   const [isListening, setIsListening] = useState(false);
+  const [isSupported] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const w = window as SpeechRecognitionWindow;
+    const ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    return Boolean(ctor);
+  });
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const router = useRouter();
-
-  // Tarayıcı desteğini kontrol et
-  const isSupported = typeof window !== "undefined" && 
-    (window.SpeechRecognition || window.webkitSpeechRecognition);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -90,14 +87,20 @@ export function useVoiceSearch({ onResult }: UseVoiceSearchProps = {}) {
       try {
         recognitionRef.current.stop();
         recognitionRef.current.abort();
-      } catch (e) {
+      } catch {
         // Önceki oturum zaten kapalı olabilir, hata yok say
       }
     }
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition() as SpeechRecognition;
+      const w = window as SpeechRecognitionWindow;
+      const ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+      if (!ctor) {
+        toast.error("Tarayıcınız sesli aramayı desteklemiyor");
+        return;
+      }
+
+      const recognition = new ctor() as SpeechRecognition;
       
       // Konfigürasyon
       recognition.continuous = false; // Tek cümle modu (YouTube tarzı)
@@ -175,4 +178,3 @@ export function useVoiceSearch({ onResult }: UseVoiceSearchProps = {}) {
     stopListening,
   };
 }
-

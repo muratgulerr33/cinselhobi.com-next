@@ -1,27 +1,39 @@
-import { getAdminStats } from "@/db/queries/admin";
+import Link from "next/link";
+import {
+  getAdminDashboardSummary,
+  getAdminLowStockProducts,
+  getAdminTopProducts,
+} from "@/db/queries/admin";
 import { formatPriceCents } from "@/lib/format";
-import { ShoppingBag, Clock, DollarSign } from "lucide-react";
+import { ShoppingBag, Clock3, DollarSign, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const LOW_STOCK_THRESHOLD = 5;
 
 export default async function AdminDashboardPage() {
-  const stats = await getAdminStats();
+  const [summary, topProducts, lowStockProducts] = await Promise.all([
+    getAdminDashboardSummary(),
+    getAdminTopProducts({ days: 30, limit: 10 }),
+    getAdminLowStockProducts({ threshold: LOW_STOCK_THRESHOLD, limit: 10 }),
+  ]);
 
   const statCards = [
     {
-      title: "Toplam Sipariş",
-      value: stats.totalOrders.toString(),
+      title: "Bugünkü Sipariş",
+      value: summary.todaysOrdersCount.toString(),
       icon: ShoppingBag,
-      description: "Tüm siparişler",
+      description: "Güncel sipariş trafiği",
     },
     {
-      title: "Bekleyen Siparişler",
-      value: stats.pendingOrders.toString(),
-      icon: Clock,
-      description: "Onay bekleyen siparişler",
+      title: "Bekleyen / Hazırlanıyor",
+      value: summary.pendingProcessingOrdersCount.toString(),
+      icon: Clock3,
+      description: "İşlem bekleyen siparişler",
       variant: "warning" as const,
     },
     {
-      title: "Toplam Ciro",
-      value: formatPriceCents(stats.totalRevenue),
+      title: "Son 7 Gün Ciro",
+      value: formatPriceCents(summary.last7DaysRevenue),
       icon: DollarSign,
       description: "Teslim edilen siparişler",
       variant: "success" as const,
@@ -73,7 +85,108 @@ export default async function AdminDashboardPage() {
           );
         })}
       </div>
+
+      <section className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-lg font-semibold">En Çok Satan Ürünler</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Son 30 gün içindeki teslim edilen siparişlere göre.
+          </p>
+        </div>
+
+        {topProducts.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Son 30 günde satış verisi bulunamadı.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Ürün</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Adet</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Ciro</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Aksiyon</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {topProducts.map((item) => (
+                  <tr key={item.productId} className="transition-colors hover:bg-muted/30">
+                    <td className="px-4 py-3 text-sm">
+                      <p className="font-medium">{item.productName}</p>
+                      <p className="text-xs text-muted-foreground">/{item.productSlug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{item.quantity}</td>
+                    <td className="px-4 py-3 text-sm font-semibold">
+                      {formatPriceCents(item.revenue)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/admin/products/${item.productId}/edit`} className="gap-2">
+                          Ürüne Git
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-lg font-semibold">Stoğu Azalan Ürünler</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Eşik değeri: {LOW_STOCK_THRESHOLD} adet ve altı.
+          </p>
+        </div>
+
+        {lowStockProducts.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Stoğu azalan ürün bulunamadı.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Ürün</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Stok</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Eşik</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Aksiyon</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {lowStockProducts.map((item) => (
+                  <tr key={item.productId} className="transition-colors hover:bg-muted/30">
+                    <td className="px-4 py-3 text-sm">
+                      <p className="font-medium">{item.productName}</p>
+                      <p className="text-xs text-muted-foreground">/{item.productSlug}</p>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{item.stockQuantity}</td>
+                    <td className="px-4 py-3 text-sm">{LOW_STOCK_THRESHOLD}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/admin/products/${item.productId}/edit`} className="gap-2">
+                          Düzenle
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-

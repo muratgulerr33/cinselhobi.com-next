@@ -2,34 +2,14 @@ import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import { getAdminOrderDetail } from "@/db/queries/admin";
 import { formatPriceCents, formatDate, getPrimaryImageUrl } from "@/lib/format";
-import { ORDER_STATUS_LABELS, type OrderStatus } from "@/lib/admin/order-status";
+import {
+  getAdminOrderStatusBadgeVariant,
+  getAdminOrderStatusLabel,
+} from "@/lib/admin/status-display";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { SafeImage } from "@/components/ui/safe-image";
 import { OrderStatusUpdateForm } from "@/components/admin/order-status-form";
-
-function getStatusBadgeVariant(status: OrderStatus) {
-  switch (status) {
-    case "pending":
-      return "warning";
-    case "processing":
-      return "info";
-    case "shipped":
-      return "info";
-    case "delivered":
-      return "success";
-    case "cancelled":
-      return "destructive";
-    default:
-      return "secondary";
-  }
-}
-
-function getStatusLabel(status: OrderStatus) {
-  return ORDER_STATUS_LABELS[status];
-}
 
 function getPaymentMethodLabel(method: "credit_card" | "cod") {
   switch (method) {
@@ -91,10 +71,10 @@ export default async function AdminOrderDetailPage({
             </p>
           </div>
           <Badge
-            variant={getStatusBadgeVariant(order.status)}
+            variant={getAdminOrderStatusBadgeVariant(order.status)}
             className="text-sm"
           >
-            {getStatusLabel(order.status)}
+            {getAdminOrderStatusLabel(order.status)}
           </Badge>
         </div>
 

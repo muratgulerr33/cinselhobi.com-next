@@ -4,6 +4,17 @@ import { eq, and, desc, isNull, or, ne, inArray, lt, asc, gte, lte, between, SQL
 
 /** Liste görünümlerinde outofstock ürünleri göstermemek için koşul (detay sayfası etkilenmez). */
 const notOutOfStock: SQL = or(isNull(products.stockStatus), ne(products.stockStatus, "outofstock")) as SQL;
+const relatedProductSelect = {
+  id: products.id,
+  name: products.name,
+  slug: products.slug,
+  price: products.price,
+  regularPrice: products.regularPrice,
+  salePrice: products.salePrice,
+  currency: products.currency,
+  images: products.images,
+  stockStatus: products.stockStatus,
+};
 
 export async function getTopCategories(limit = 8) {
   // Rollup hesaplama: parent + tüm child kategorilerindeki publish ürün sayısı
@@ -214,17 +225,7 @@ export async function getRelatedProductsBySlug(slug: string, limit = 10) {
 
   // Aynı kategorilerdeki diğer ürünleri çek (mevcut ürünü hariç tut)
   const result = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      slug: products.slug,
-      price: products.price,
-      regularPrice: products.regularPrice,
-      salePrice: products.salePrice,
-      currency: products.currency,
-      images: products.images,
-      stockStatus: products.stockStatus,
-    })
+    .select(relatedProductSelect)
     .from(products)
     .innerJoin(productCategories, eq(products.id, productCategories.productId))
     .where(
@@ -247,6 +248,79 @@ export async function getRelatedProductsBySlug(slug: string, limit = 10) {
   });
 
   return unique;
+}
+
+export async function getManualCrossSellProductsBySlug(slug: string, limit = 10) {
+  if (limit <= 0) {
+    return [];
+  }
+
+  const currentProduct = await getProductBySlug(slug);
+  if (!currentProduct) {
+    return [];
+  }
+
+  const crossSellIds = Array.isArray(currentProduct.crossSellIds)
+    ? currentProduct.crossSellIds.filter((id): id is number => Number.isInteger(id))
+    : [];
+
+  if (crossSellIds.length === 0) {
+    return [];
+  }
+
+  const dedupedCrossSellIds = Array.from(new Set(crossSellIds));
+  const crossSellIdsArraySql = sql`ARRAY[${sql.join(
+    dedupedCrossSellIds.map((id) => sql`${id}`),
+    sql`, `
+  )}]::integer[]`;
+
+  const result = await db
+    .select(relatedProductSelect)
+    .from(products)
+    .where(
+      and(
+        eq(products.status, "publish"),
+        notOutOfStock,
+        ne(products.id, currentProduct.id),
+        inArray(products.id, dedupedCrossSellIds)
+      )
+    )
+    .orderBy(sql`array_position(${crossSellIdsArraySql}, ${products.id})`)
+    .limit(limit);
+
+  return result;
+}
+
+export async function getCrossSellProductsForSlug(slug: string, limit = 10) {
+  if (limit <= 0) {
+    return [];
+  }
+
+  const manual = await getManualCrossSellProductsBySlug(slug, limit);
+
+  if (manual.length >= limit) {
+    return manual.slice(0, limit);
+  }
+
+  const fallback = await getRelatedProductsBySlug(slug, limit * 2);
+  const usedIds = new Set<number>(manual.map((product) => product.id));
+  const usedSlugs = new Set<string>(manual.map((product) => product.slug));
+
+  const filled = fallback
+    .filter((product) => {
+      if (product.slug === slug) {
+        return false;
+      }
+      if (usedIds.has(product.id) || usedSlugs.has(product.slug)) {
+        return false;
+      }
+      usedIds.add(product.id);
+      usedSlugs.add(product.slug);
+      return true;
+    })
+    .slice(0, limit - manual.length);
+
+  return [...manual, ...filled];
 }
 
 export async function getLatestProductsCursor(opts: { limit: number; cursor?: number | null; userId?: string | null }) {

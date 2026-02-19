@@ -9,7 +9,7 @@ import { DesktopNavigation } from "@/components/layout/DesktopNavigation";
 
 export function DesktopHeader() {
   return (
-    <header className="hidden h-16 border-b border-border bg-background xl:flex">
+    <header className="relative z-[70] hidden h-16 border-b border-border bg-background xl:flex">
       <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 sm:px-5 md:px-6 lg:px-8 2xl:px-12">
         {/* Left: Brand/Logo */}
         <Link
@@ -65,4 +65,3 @@ export function DesktopHeader() {
     </header>
   );
 }
-

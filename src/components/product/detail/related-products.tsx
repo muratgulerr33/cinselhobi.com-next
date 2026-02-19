@@ -1,4 +1,4 @@
-import { getRelatedProductsBySlug } from "@/db/queries/catalog";
+import { getCrossSellProductsForSlug } from "@/db/queries/catalog";
 import { RelatedProductsCarousel } from "./related-products-carousel";
 import type { RelatedProduct } from "./types";
 
@@ -31,8 +31,8 @@ function normalizeImages(images: unknown): Array<{ src: string; alt?: string }> 
 }
 
 export async function RelatedProducts({ productId, categoryId, slug }: RelatedProductsProps) {
-  // Slug kullanarak ilgili ürünleri çek (getRelatedProductsBySlug zaten kategori kontrolü yapıyor)
-  const relatedProducts = await getRelatedProductsBySlug(slug, 10);
+  // Slug kullanarak manuel cross-sell + fallback related ürünleri çek
+  const relatedProducts = await getCrossSellProductsForSlug(slug, 10);
 
   // Debug: Eğer ürün yoksa debug mesajı göster
   if (relatedProducts.length === 0) {
@@ -61,4 +61,3 @@ export async function RelatedProducts({ productId, categoryId, slug }: RelatedPr
 
   return <RelatedProductsCarousel products={normalized} />;
 }
-

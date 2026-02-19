@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 interface CategoryInfo {
@@ -42,9 +42,15 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const [categoryInfo, setCategoryInfoState] = useState<CategoryInfo | null>(null);
   const [catalogParams, setCatalogParamsState] = useState<CatalogParamsFromUrl>(DEFAULT_CATALOG_PARAMS);
   const pathname = usePathname();
+  const didMountRef = useRef(false);
 
   // Route değişince title, category info ve catalog params sıfırla
   useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
     // Reset için sync setState gerekli - route değişiminde state temizleme
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTitleState(null);
@@ -108,5 +114,4 @@ export function useHeaderContext() {
   }
   return context;
 }
-
 

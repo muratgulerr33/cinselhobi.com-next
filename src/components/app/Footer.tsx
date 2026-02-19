@@ -42,6 +42,20 @@ type FooterLinkGroup = {
   links: FooterLink[];
 };
 
+function toAccordionIdToken(value: string): string {
+  return value
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
 export const footerLinks: FooterLinkGroup[] = [
   {
     title: "Kurumsal",
@@ -92,7 +106,7 @@ function FooterNavLinks({ links }: { links: FooterLink[] }) {
 
 export default function Footer() {
   return (
-    <footer className="bg-background border-t">
+    <footer data-footer-root="1" className="bg-background border-t">
       <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-5 md:px-6 lg:px-8 2xl:px-12 py-12">
         {/* Desktop Footer */}
         <div className="hidden lg:grid grid-cols-5 gap-10">
@@ -279,16 +293,23 @@ export default function Footer() {
 
           {/* Link Groups - Accordion */}
           <Accordion type="multiple" className="w-full">
-            {footerLinks.map((group) => (
-              <AccordionItem key={group.title} value={group.title}>
-                <AccordionTrigger className="text-left">
-                  {group.title}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <FooterNavLinks links={group.links} />
-                </AccordionContent>
-              </AccordionItem>
-            ))}
+            {footerLinks.map((group, index) => {
+              const groupToken = toAccordionIdToken(group.title);
+              const itemValue = `footer-mobile-${groupToken}-${index}`;
+              const triggerId = `${itemValue}-trigger`;
+              const contentId = `${itemValue}-content`;
+
+              return (
+                <AccordionItem key={group.title} value={itemValue}>
+                  <AccordionTrigger id={triggerId} aria-controls={contentId} className="text-left">
+                    {group.title}
+                  </AccordionTrigger>
+                  <AccordionContent id={contentId} aria-labelledby={triggerId}>
+                    <FooterNavLinks links={group.links} />
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         </div>
 
@@ -346,4 +367,3 @@ export default function Footer() {
     </footer>
   );
 }
-

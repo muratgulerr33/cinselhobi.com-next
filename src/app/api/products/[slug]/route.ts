@@ -87,8 +87,11 @@ export async function GET(
     wcId: product.wcId,
     slug: product.slug,
     name: product.name,
+    status: product.status || null,
     description: product.description || null,
     shortDescription: product.shortDescription || null,
+    seoTitle: product.seoTitle || null,
+    seoDescription: product.seoDescription || null,
     price: product.price,
     regularPrice: product.regularPrice,
     salePrice: product.salePrice,
@@ -101,4 +104,3 @@ export async function GET(
   response.headers.set("x-api-source", "local-route");
   return response;
 }
-

@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "cross_sell_ids" integer[];

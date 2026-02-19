@@ -99,8 +99,13 @@ seo_exports/nextjs/v1/*
 # --- local-only folders (DO NOT COMMIT) ---
 /assets/
 /data/
-/scripts/
+/scripts/*
+!/scripts/check-hydration-divergence.mjs
 
 # Local dev artifacts (do not commit)
 /seo/
 /discovery/
+/.data/
+
+# local ops
+/_ops/

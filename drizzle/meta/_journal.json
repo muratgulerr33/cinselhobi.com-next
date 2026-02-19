@@ -57,6 +57,20 @@
       "when": 1768521968917,
       "tag": "0007_woozy_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1771330365960,
+      "tag": "0008_lying_the_captain",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1771370425311,
+      "tag": "0009_last_blur",
+      "breakpoints": true
     }
   ]
 }
