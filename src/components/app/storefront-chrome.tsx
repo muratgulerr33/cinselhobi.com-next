@@ -27,7 +27,7 @@ export function StorefrontChrome({ children }: StorefrontChromeProps) {
       <SearchOverlay />
       <AgeGate />
       <main className="flex-1 overflow-hidden xl:overflow-visible">
-        <PageTransition>{children}</PageTransition>
+        <PageTransition mobileFooter={<Footer />}>{children}</PageTransition>
       </main>
       <div className="hidden xl:block">
         <Footer />

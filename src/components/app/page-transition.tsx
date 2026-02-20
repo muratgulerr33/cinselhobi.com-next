@@ -21,6 +21,7 @@ import { consumeTabNavIntent, readTabScroll } from "./tab-scroll";
 
 interface PageTransitionProps {
   children: ReactNode;
+  mobileFooter?: ReactNode;
 }
 
 function FrozenRouter({ children }: { children: ReactNode }) {
@@ -45,9 +46,11 @@ function FrozenRouter({ children }: { children: ReactNode }) {
 
 function ScreenShell({
   children,
+  mobileFooter,
   pathnameKey,
 }: {
   children: ReactNode;
+  mobileFooter?: ReactNode;
   pathnameKey: string;
 }) {
   const isPresent = useIsPresent();
@@ -79,16 +82,25 @@ function ScreenShell({
       ref={scrollRef}
       data-scroll-container
       data-active={isPresent ? "true" : "false"}
-      className="h-[100dvh] overflow-y-auto overscroll-contain bg-background pt-[calc(56px+env(safe-area-inset-top,0px))] pb-[calc(72px+env(safe-area-inset-bottom,0px))] xl:h-auto xl:overflow-visible xl:pt-0 xl:pb-0"
+      className={`h-[100dvh] overflow-y-auto overscroll-contain bg-background pt-[calc(56px+env(safe-area-inset-top,0px))] ${
+        mobileFooter
+          ? "pb-0 xl:pb-0"
+          : "pb-[calc(72px+env(safe-area-inset-bottom,0px))] xl:pb-0"
+      } xl:h-auto xl:overflow-visible xl:pt-0`}
     >
       <div className="mx-auto w-full min-w-0 max-w-screen-2xl px-4 sm:px-5 md:px-6 lg:px-8 2xl:px-12">
         {children}
       </div>
+      {mobileFooter ? (
+        <div className="xl:hidden pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          {mobileFooter}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-export function PageTransition({ children }: PageTransitionProps) {
+export function PageTransition({ children, mobileFooter }: PageTransitionProps) {
   const pathname = usePathname();
   const prevPathnameRef = useRef<string>(pathname);
   const reducedMotion = useReducedMotion();
@@ -147,7 +159,7 @@ export function PageTransition({ children }: PageTransitionProps) {
             transition={transition}
             className="w-full min-w-0 max-w-full bg-background [grid-area:1/1] [will-change:transform]"
           >
-            <ScreenShell pathnameKey={pathname}>
+            <ScreenShell pathnameKey={pathname} mobileFooter={mobileFooter}>
               <FrozenRouter>{children}</FrozenRouter>
             </ScreenShell>
           </motion.div>
