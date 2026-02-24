@@ -33,7 +33,7 @@ export function HomeHubGrid() {
     <div data-home-hub-clamp className="w-full">
 <section aria-label="Hızlı koleksiyonlar" className="mt-4">
       <div className="grid grid-cols-2 gap-3">
-        {TILES.map((tile) => (
+        {TILES.map((tile, idx) => (
           <Link
             key={tile.href}
             href={tile.href}
@@ -43,7 +43,7 @@ export function HomeHubGrid() {
               src={tile.imgSrc}
               alt={tile.alt}
               fill
-              priority
+              priority={idx === 0}
               sizes="(max-width: 768px) 50vw, 25vw"
               className="object-cover"
             />

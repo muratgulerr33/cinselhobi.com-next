@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,9 @@ interface MobileBottomNavProps {
   hasUnread?: boolean;
 }
 
+const KEYBOARD_INSET_THRESHOLD = 80;
+const KEYBOARD_TRIGGER_SELECTOR = '[data-kb-trigger="1"]';
+
 // Kullanıcı adının baş harflerini al
 function getInitials(name?: string | null): string {
   if (!name) return "";
@@ -35,6 +38,34 @@ function getInitials(name?: string | null): string {
   return name[0]?.toUpperCase() || "";
 }
 
+function isEditableElement(element: Element | null): boolean {
+  if (!(element instanceof HTMLElement)) return false;
+  if (element.isContentEditable) return true;
+  if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+    return !element.disabled;
+  }
+  if (element instanceof HTMLInputElement) {
+    return element.type !== "hidden" && !element.disabled && !element.readOnly;
+  }
+  return false;
+}
+
+function isElementInKeyboardTriggerScope(element: Element | null): boolean {
+  if (!(element instanceof HTMLElement)) return false;
+  if (element.closest(KEYBOARD_TRIGGER_SELECTOR)) return true;
+
+  const formOwner =
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+      ? element.form
+      : element.closest("form");
+  if (formOwner?.closest(KEYBOARD_TRIGGER_SELECTOR)) return true;
+
+  const triggerRoots = document.querySelectorAll<HTMLElement>(KEYBOARD_TRIGGER_SELECTOR);
+  return Array.from(triggerRoots).some((triggerRoot) => triggerRoot.contains(element));
+}
+
 export function MobileBottomNav({
   user,
   cartCount: propCartCount,
@@ -42,7 +73,62 @@ export function MobileBottomNav({
 }: MobileBottomNavProps) {
   const pathname = usePathname();
   const [cartOpen, setCartOpen] = useState(false);
+  const [isKeyboardOpenForTrigger, setIsKeyboardOpenForTrigger] = useState(false);
   const { count: cartCountFromStore } = useCart();
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) {
+      return;
+    }
+
+    const vv = window.visualViewport;
+    let baselineHeight = vv.height;
+    let rafId: number | null = null;
+
+    const updateKeyboardState = () => {
+      const activeElement = document.activeElement;
+      const isEditable = isEditableElement(activeElement);
+      const isTriggerFocused = isElementInKeyboardTriggerScope(activeElement);
+      const inset = Math.max(0, baselineHeight - vv.height);
+      const isTrackingTrigger = isEditable && isTriggerFocused;
+
+      // Trigger odakta değilken (veya keyboard tamamen kapalıyken) baseline'ı güncel tut.
+      if (!isTrackingTrigger || inset < 1) {
+        baselineHeight = vv.height;
+      }
+
+      setIsKeyboardOpenForTrigger(
+        isTrackingTrigger && inset >= KEYBOARD_INSET_THRESHOLD
+      );
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateKeyboardState();
+      });
+    };
+
+    scheduleUpdate();
+
+    vv.addEventListener("resize", scheduleUpdate);
+    vv.addEventListener("scroll", scheduleUpdate);
+    window.addEventListener("focusin", scheduleUpdate);
+    window.addEventListener("focusout", scheduleUpdate);
+    window.addEventListener("orientationchange", scheduleUpdate);
+
+    return () => {
+      vv.removeEventListener("resize", scheduleUpdate);
+      vv.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("focusin", scheduleUpdate);
+      window.removeEventListener("focusout", scheduleUpdate);
+      window.removeEventListener("orientationchange", scheduleUpdate);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
   
   // Product detail sayfalarında bottom nav gizle
   if (pathname?.startsWith("/urun/")) {
@@ -81,7 +167,11 @@ export function MobileBottomNav({
   return (
     <Drawer open={cartOpen} onOpenChange={setCartOpen} shouldScaleBackground>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 xl:hidden border-t border-gray-100 bg-white pt-2 pb-2 pb-[env(safe-area-inset-bottom)] dark:border-white/10 dark:bg-black"
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-50 xl:hidden border-t border-gray-100 bg-white pt-2 pb-2 pb-[env(safe-area-inset-bottom)] dark:border-white/10 dark:bg-black",
+          "transform-gpu transition-transform transition-opacity duration-200",
+          isKeyboardOpenForTrigger && "translate-y-[110%] opacity-0 pointer-events-none"
+        )}
         aria-label="Bottom Navigation"
       >
         <div className="flex items-stretch justify-between">

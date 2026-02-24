@@ -182,6 +182,7 @@ export function ProductCard({
 
   // Title normalizasyonu: FULL CAPS ise lowercase'e çevir ve capitalize uygula
   const rawTitle = (title ?? "").trim();
+  const imageAlt = rawTitle || "Ürün görseli";
   const isAllCaps = rawTitle.length > 0 && rawTitle === rawTitle.toLocaleUpperCase("tr-TR");
   const normalizedTitle = isAllCaps ? rawTitle.toLocaleLowerCase("tr-TR") : rawTitle;
 
@@ -217,7 +218,7 @@ export function ProductCard({
             <div className="absolute inset-0 p-4">
               <SafeImage
                 src={currentImage}
-                alt={title}
+                alt={imageAlt}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                 className="object-contain mix-blend-multiply dark:mix-blend-normal"
@@ -268,4 +269,3 @@ export function ProductCard({
     </>
   );
 }
-

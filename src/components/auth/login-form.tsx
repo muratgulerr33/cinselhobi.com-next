@@ -52,7 +52,7 @@ export function LoginForm({ defaultEmail = "", callbackUrl = "/" }: LoginFormPro
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} data-kb-trigger="1" className="space-y-4">
       {error && (
         <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
           {error}
@@ -92,4 +92,3 @@ export function LoginForm({ defaultEmail = "", callbackUrl = "/" }: LoginFormPro
     </form>
   );
 }
-

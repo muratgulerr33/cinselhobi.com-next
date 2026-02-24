@@ -119,54 +119,78 @@ export default function Footer() {
               CinselHobi
             </Link>
             <p className="text-sm text-muted-foreground">
-              Güvenli ve özel alışveriş deneyimi
+              Türkiye&apos;nin en gizli premium deneyim platformu
             </p>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Mersin / Akdeniz</span>
+              <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span
+                  className="truncate"
+                  title="Hamidiye Mah. Cengiz Topel Cd. No:11-C Mersin/Akdeniz"
+                >
+                  Hamidiye Mah. Cengiz Topel Cd. No:11-C Mersin/Akdeniz
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
                 <a
-                  href="tel:+905551234567"
+                  href="tel:+905458651215"
                   className="transition-colors hover:text-primary"
                 >
-                  +90 555 123 45 67
+                  +90 545 865 12 15
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>Çalışma Saatleri: 11:00 – 22:00</span>
+              <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="leading-5">
+                  <div>Mağaza: Her gün 09:00–21:00</div>
+                  <div>Online: Her gün 09:00–23:45</div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center justify-center gap-4 pt-2">
               <a
-                href="https://instagram.com/cinselhobi"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                href="tel:+905458651215"
+                aria-label="Telefon"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Instagram className="h-5 w-5" />
+                <Phone className="h-6 w-6" />
               </a>
               <a
-                href="https://facebook.com/cinselhobi"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                href="https://wa.me/905551234567"
+                href="https://wa.me/905458651215"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <WhatsAppIcon className="h-5 w-5" />
+                <WhatsAppIcon className="h-6 w-6" />
+              </a>
+              <a
+                href="https://instagram.com/cinselhobi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Instagram className="h-6 w-6" />
+              </a>
+              <a
+                href="https://facebook.com/cinselhobi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a
+                href="https://share.google/wX01duXhDTiNYp2yZ"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Konum"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <MapPin className="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -195,7 +219,8 @@ export default function Footer() {
                 type="email"
                 placeholder="E-posta adresiniz"
                 required
-                className="w-full"
+                data-kb-trigger="1"
+                className="w-full text-base"
               />
               <Button type="submit" className="w-full">
                 Abone Ol
@@ -215,54 +240,78 @@ export default function Footer() {
               CinselHobi
             </Link>
             <p className="text-sm text-muted-foreground">
-              Güvenli ve özel alışveriş deneyimi
+              Türkiye&apos;nin en gizli premium deneyim platformu
             </p>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Mersin / Akdeniz</span>
+              <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span
+                  className="truncate"
+                  title="Hamidiye Mah. Cengiz Topel Cd. No:11-C Mersin/Akdeniz"
+                >
+                  Hamidiye Mah. Cengiz Topel Cd. No:11-C Mersin/Akdeniz
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
                 <a
-                  href="tel:+905551234567"
+                  href="tel:+905458651215"
                   className="transition-colors hover:text-primary"
                 >
-                  +90 555 123 45 67
+                  +90 545 865 12 15
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>Çalışma Saatleri: 11:00 – 22:00</span>
+              <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="leading-5">
+                  <div>Mağaza: Her gün 09:00–21:00</div>
+                  <div>Online: Her gün 09:00–23:45</div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center justify-center gap-4 pt-2">
               <a
-                href="https://instagram.com/cinselhobi"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                href="tel:+905458651215"
+                aria-label="Telefon"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Instagram className="h-5 w-5" />
+                <Phone className="h-6 w-6" />
               </a>
               <a
-                href="https://facebook.com/cinselhobi"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                href="https://wa.me/905551234567"
+                href="https://wa.me/905458651215"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
-                className="text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <WhatsAppIcon className="h-5 w-5" />
+                <WhatsAppIcon className="h-6 w-6" />
+              </a>
+              <a
+                href="https://instagram.com/cinselhobi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Instagram className="h-6 w-6" />
+              </a>
+              <a
+                href="https://facebook.com/cinselhobi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a
+                href="https://share.google/wX01duXhDTiNYp2yZ"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Konum"
+                className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <MapPin className="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -283,7 +332,8 @@ export default function Footer() {
                 type="email"
                 placeholder="E-posta adresiniz"
                 required
-                className="w-full"
+                data-kb-trigger="1"
+                className="w-full text-base"
               />
               <Button type="submit" className="w-full">
                 Abone Ol

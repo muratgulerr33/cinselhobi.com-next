@@ -54,7 +54,11 @@ export function PasswordForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        data-kb-trigger="1"
+        className="space-y-4 py-2"
+      >
         <FormField
           control={form.control}
           name="currentPassword"

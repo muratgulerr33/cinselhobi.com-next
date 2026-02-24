@@ -2,13 +2,19 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { ShoppingBag, Truck, ShieldCheck, Headset, Check } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ShoppingBag, Truck, ShieldCheck, Headset, Check, MessageCircle } from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { formatPrice } from "@/lib/format";
 import { HeaderTitle } from "@/components/layout/header-title";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
 import { useFavorites } from "@/components/favorites/favorites-provider";
 import { toast } from "sonner";
+
+const LiveSupportDrawer = dynamic(
+  () => import("@/components/support/live-support-drawer").then((m) => m.LiveSupportDrawer),
+  { ssr: false }
+);
 
 // --- TİP TANIMLARI ---
 interface ProductImage {
@@ -51,6 +57,7 @@ function htmlToPlainText(input: string) {
 export function ProductView({ product }: { product: ProductType }) {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [liveSupportOpen, setLiveSupportOpen] = useState(false);
   const { addItem } = useCart();
   const { isFavorite, hydrated } = useFavorites();
   
@@ -285,6 +292,18 @@ export function ProductView({ product }: { product: ProductType }) {
 
                     <button
                       type="button"
+                      onClick={() => setLiveSupportOpen(true)}
+                      aria-label="Canlı destek"
+                      className="h-12 rounded-full border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <MessageCircle className="h-5 w-5" />
+                        <span>Canlı Destek</span>
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={handleAddToCart}
                       className={`h-12 flex-1 rounded-full font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                         isAdded
@@ -331,6 +350,15 @@ export function ProductView({ product }: { product: ProductType }) {
 
             <button
               type="button"
+              onClick={() => setLiveSupportOpen(true)}
+              aria-label="Canlı destek"
+              className="h-12 w-12 rounded-full border border-border bg-background text-foreground flex items-center justify-center transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </button>
+
+            <button
+              type="button"
               onClick={handleAddToCart}
               className={`h-12 min-w-[140px] flex-1 rounded-full font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
                 isAdded
@@ -353,6 +381,8 @@ export function ProductView({ product }: { product: ProductType }) {
           </div>
         </div>
       </div>
+
+      <LiveSupportDrawer open={liveSupportOpen} onOpenChange={setLiveSupportOpen} />
 
       <style jsx global>{`
         .scrollbar-hide {

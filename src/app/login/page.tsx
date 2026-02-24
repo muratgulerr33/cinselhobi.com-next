@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { emailExistsAction } from "@/actions/auth";
 import { getFavoriteIntent } from "@/lib/favorites-intent";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const robotoMedium = Roboto({ subsets: ["latin", "latin-ext"], weight: "500" });
@@ -124,7 +124,7 @@ function LoginPageContent() {
   // Email-first akış: email henüz submit edilmediyse email input göster
   if (!emailSubmitted) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-md">
+      <div className="container mx-auto px-4 py-8 max-w-md" data-kb-trigger="1">
         <h1 className="text-2xl font-bold mb-6">Giriş Yap</h1>
 
         {/* OAuth Butonları */}
@@ -171,7 +171,7 @@ function LoginPageContent() {
         </div>
 
         {/* Email Input */}
-        <form onSubmit={handleEmailSubmit} className="space-y-4">
+        <form onSubmit={handleEmailSubmit} className="space-y-0">
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
               E-posta ile devam et
@@ -185,8 +185,21 @@ function LoginPageContent() {
               required
               disabled={isCheckingEmail}
             />
+            <div className="mt-2 flex min-w-0">
+              <div className="min-w-0 w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2 flex items-start gap-2">
+                <Info className="mt-[2px] h-4 w-4 text-muted-foreground" />
+                <p className="text-[13px] leading-5 font-medium text-muted-foreground truncate whitespace-nowrap">
+                  Giriş veya kayıt için e-posta adresinizi girin.
+                </p>
+              </div>
+            </div>
           </div>
-          <Button type="submit" disabled={isCheckingEmail} className="w-full">
+          <Button
+            type="submit"
+            data-kb-cta="1"
+            disabled={isCheckingEmail}
+            className="mt-4 w-full"
+          >
             {isCheckingEmail ? "Kontrol ediliyor..." : "Devam Et"}
           </Button>
         </form>
@@ -196,7 +209,7 @@ function LoginPageContent() {
 
   // Email submit edildi: exists=true ise LoginForm, exists=false ise SignupForm
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
+    <div className="container mx-auto px-4 py-8 max-w-md" data-kb-trigger="1">
       <h1 className="text-2xl font-bold mb-6">
         {emailExists ? "Giriş Yap" : "Kayıt Ol"}
       </h1>

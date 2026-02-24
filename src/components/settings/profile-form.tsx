@@ -45,7 +45,11 @@ export function ProfileForm({ defaultName }: { defaultName: string }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        data-kb-trigger="1"
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="name"

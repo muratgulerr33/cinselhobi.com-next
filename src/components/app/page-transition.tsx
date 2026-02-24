@@ -7,6 +7,7 @@ import {
   useLayoutEffect,
   useContext,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import {
@@ -22,6 +23,28 @@ import { consumeTabNavIntent, readTabScroll } from "./tab-scroll";
 interface PageTransitionProps {
   children: ReactNode;
   mobileFooter?: ReactNode;
+}
+
+const KEYBOARD_TRIGGER_SELECTOR = '[data-kb-trigger="1"]';
+const DESKTOP_BREAKPOINT_QUERY = "(min-width: 1280px)";
+
+function isEditableElement(element: HTMLElement): boolean {
+  if (element.isContentEditable) return true;
+  if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+    return !element.disabled;
+  }
+  if (element instanceof HTMLInputElement) {
+    return element.type !== "hidden" && !element.disabled && !element.readOnly;
+  }
+  return false;
+}
+
+function inKeyboardScope(element: HTMLElement): boolean {
+  return Boolean(element.closest(KEYBOARD_TRIGGER_SELECTOR));
+}
+
+function isMobileViewport(): boolean {
+  return !window.matchMedia(DESKTOP_BREAKPOINT_QUERY).matches;
 }
 
 function FrozenRouter({ children }: { children: ReactNode }) {
@@ -55,7 +78,60 @@ function ScreenShell({
 }) {
   const isPresent = useIsPresent();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastEnsureRef = useRef<{ target: HTMLElement | null; at: number }>({
+    target: null,
+    at: 0,
+  });
+  const timeoutIdsRef = useRef<number[]>([]);
   const currentTabId = getActiveTabId(pathnameKey);
+
+  const ensureVisible = useCallback((target: HTMLElement | null) => {
+    if (!target) return;
+    const container = scrollRef.current;
+    if (!container) return;
+    if (!isMobileViewport()) return;
+
+    const vv = window.visualViewport;
+    const keyboardTop = vv ? vv.offsetTop + vv.height : window.innerHeight;
+    const targetTop = vv
+      ? vv.offsetTop + vv.height * 0.28
+      : window.innerHeight * 0.28;
+    const topLimit = 56 + 12;
+
+    let elRect = target.getBoundingClientRect();
+    const deltaToTarget = elRect.top - targetTop;
+    if (Math.abs(deltaToTarget) > 8) {
+      container.scrollBy({ top: deltaToTarget, behavior: "auto" });
+    }
+
+    elRect = target.getBoundingClientRect();
+    if (elRect.top < topLimit) {
+      container.scrollBy({
+        top: elRect.top - topLimit - 12,
+        behavior: "auto",
+      });
+    }
+    if (elRect.bottom > keyboardTop - 12) {
+      container.scrollBy({
+        top: elRect.bottom - (keyboardTop - 12) + 16,
+        behavior: "auto",
+      });
+    }
+
+    const scope = target.closest(KEYBOARD_TRIGGER_SELECTOR) as HTMLElement | null;
+    const primaryCta = scope?.querySelector<HTMLElement>(
+      '[data-kb-cta="1"], button[type="submit"]'
+    );
+    if (primaryCta) {
+      const ctaRect = primaryCta.getBoundingClientRect();
+      if (ctaRect.bottom > keyboardTop - 12) {
+        container.scrollBy({
+          top: ctaRect.bottom - (keyboardTop - 12) + 16,
+          behavior: "auto",
+        });
+      }
+    }
+  }, []);
 
   // Scroll restore - paint'ten önce uygula
   useLayoutEffect(() => {
@@ -76,6 +152,86 @@ function ScreenShell({
       if (el2) el2.scrollTop = y;
     });
   }, [pathnameKey, currentTabId, isPresent]);
+
+  useEffect(() => {
+    if (!isPresent) return;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const clearPendingTimeouts = () => {
+      for (const timeoutId of timeoutIdsRef.current) {
+        window.clearTimeout(timeoutId);
+      }
+      timeoutIdsRef.current = [];
+    };
+
+    const runEnsure = (target: HTMLElement) => {
+      window.requestAnimationFrame(() => {
+        if (!target.isConnected) return;
+        if (document.activeElement !== target) return;
+        if (!isMobileViewport()) return;
+        if (!container.contains(target)) return;
+        if (!isEditableElement(target)) return;
+        if (!inKeyboardScope(target)) return;
+
+        const now = Date.now();
+        if (
+          lastEnsureRef.current.target === target &&
+          now - lastEnsureRef.current.at < 60
+        ) {
+          return;
+        }
+
+        lastEnsureRef.current = { target, at: now };
+        ensureVisible(target);
+      });
+    };
+
+    const scheduleEnsurePasses = (target: HTMLElement, delays: number[]) => {
+      for (const delay of delays) {
+        const timeoutId = window.setTimeout(() => {
+          timeoutIdsRef.current = timeoutIdsRef.current.filter(
+            (id) => id !== timeoutId
+          );
+          runEnsure(target);
+        }, delay);
+        timeoutIdsRef.current.push(timeoutId);
+      }
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      if (!isMobileViewport()) return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (!container.contains(target)) return;
+      if (!isEditableElement(target)) return;
+      if (!inKeyboardScope(target)) return;
+
+      scheduleEnsurePasses(target, [0, 120, 320]);
+    };
+
+    const handleViewportChange = () => {
+      if (!isMobileViewport()) return;
+      const activeElement = document.activeElement;
+      if (!(activeElement instanceof HTMLElement)) return;
+      if (!container.contains(activeElement)) return;
+      if (!isEditableElement(activeElement)) return;
+      if (!inKeyboardScope(activeElement)) return;
+      scheduleEnsurePasses(activeElement, [0, 120]);
+    };
+
+    container.addEventListener("focusin", handleFocusIn, true);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", handleViewportChange);
+    vv?.addEventListener("scroll", handleViewportChange);
+
+    return () => {
+      container.removeEventListener("focusin", handleFocusIn, true);
+      vv?.removeEventListener("resize", handleViewportChange);
+      vv?.removeEventListener("scroll", handleViewportChange);
+      clearPendingTimeouts();
+    };
+  }, [isPresent, ensureVisible]);
 
   return (
     <div

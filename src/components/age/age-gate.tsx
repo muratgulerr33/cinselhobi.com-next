@@ -54,7 +54,7 @@ function GateContent({
           Geri
         </Button>
         <div ref={primaryRef}>
-          <Button onClick={onConfirm} type="button">
+          <Button onClick={onConfirm} type="button" className="text-[20px] font-bold">
             18+ Devam Et
           </Button>
         </div>
@@ -152,7 +152,7 @@ export function AgeGate() {
                 Geri
               </Button>
               <div ref={primaryRef} className="w-full">
-                <Button onClick={handleConfirm} type="button" className="w-full">
+                <Button onClick={handleConfirm} type="button" className="w-full text-[20px] font-bold">
                   18+ Devam Et
                 </Button>
               </div>
