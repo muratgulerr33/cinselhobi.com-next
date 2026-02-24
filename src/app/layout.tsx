@@ -127,6 +127,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const analyticsDisabled = process.env.NEXT_PUBLIC_ANALYTICS_DISABLED === "1";
+  const shouldRenderAnalytics = process.env.NODE_ENV === "production" && !analyticsDisabled;
+
   return (
     // suppressHydrationWarning: Next.js'in tema uyumsuzluğu uyarısını engeller
     <html lang="tr" suppressHydrationWarning className={cn(geistSans.variable, geistMono.variable, "overflow-x-clip")}>
@@ -159,7 +162,7 @@ export default function RootLayout({
             </FavoritesProvider>
           </AuthProvider>
         </ThemeProvider>
-        {process.env.NODE_ENV === "production" && (
+        {shouldRenderAnalytics && (
           <>
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
             <Suspense fallback={null}>

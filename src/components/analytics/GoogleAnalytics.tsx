@@ -18,18 +18,19 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
 
   return (
     <>
+      <Script id="ga4-stub" strategy="beforeInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          window.gtag = window.gtag || gtag;
+          window.gtag('js', new Date());
+          window.gtag('config', ${JSON.stringify(gaId)}, { send_page_view: false });
+        `}
+      </Script>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
         strategy="lazyOnload"
       />
-      <Script id="ga4-init" strategy="lazyOnload">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${gaId}');
-        `}
-      </Script>
     </>
   );
 }
