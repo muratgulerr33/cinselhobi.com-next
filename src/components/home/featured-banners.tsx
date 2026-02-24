@@ -54,6 +54,9 @@ export function FeaturedBanners() {
               src="/images/home/banners/featured-couples.webp"
               alt="Çiftlere özel banner görseli"
               fill
+              priority
+              fetchPriority="high"
+              loading="eager"
               sizes="100vw"
               className="object-cover"
             />

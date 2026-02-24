@@ -4,6 +4,8 @@ import * as React from "react";
 import Image, { ImageProps } from "next/image";
 import { cn } from "@/lib/utils";
 
+const __safeImageWarned = new Set<string>();
+
 /** Sadece string src'lerde wp-content kontrolü. Object (StaticImport) için kullanma. */
 function isWpContentUrl(src: string): boolean {
   return /wp-content\/uploads/i.test(src);
@@ -14,7 +16,7 @@ function isWpContentUrl(src: string): boolean {
  * - wp-content URL'lerini render etmez (placeholder'a düşer)
  * - src StaticImport (object) ise ASLA blocked yapılmaz
  * - src boş string / null ise placeholder
- * - unoptimized ile Next optimizer'a sokmaz
+ * - Internal/StaticImport görsellerde optimizer kullanır, remote URL'de varsayılan unoptimized
  */
 export function SafeImage({
   src,
@@ -22,6 +24,7 @@ export function SafeImage({
   className,
   fill,
   sizes,
+  unoptimized: unoptimizedProp,
   onError,
   ...rest
 }: ImageProps) {
@@ -33,6 +36,18 @@ export function SafeImage({
   }, [src]);
 
   const noSrc = src == null || (typeof src === "string" && src.trim() === "");
+  const internalSrc = typeof src === "string" && src.startsWith("/");
+  const staticImportSrc = typeof src === "object" && src !== null;
+  const resolvedUnoptimized =
+    unoptimizedProp ?? !(internalSrc || staticImportSrc);
+  const resolvedSizes = sizes ?? (fill ? "100vw" : undefined);
+
+  if (process.env.NODE_ENV !== "production" && typeof window !== "undefined") {
+    if (fill && !sizes && typeof src === "string" && !__safeImageWarned.has(src)) {
+      __safeImageWarned.add(src);
+      console.warn("[SafeImage] missing `sizes` for fill image:", src);
+    }
+  }
 
   const handleError = React.useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -61,9 +76,9 @@ export function SafeImage({
       src={src}
       alt={alt}
       fill={fill}
-      sizes={sizes}
+      sizes={resolvedSizes}
       className={className}
-      unoptimized
+      unoptimized={resolvedUnoptimized}
       onError={handleError}
       {...rest}
     />
