@@ -109,3 +109,6 @@ seo_exports/nextjs/v1/*
 
 # local ops
 /_ops/
+
+# local test artifacts
+test-results/
