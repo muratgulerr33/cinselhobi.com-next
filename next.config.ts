@@ -35,6 +35,32 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Legacy WordPress sitemap endpoint'leri soft-404 yerine /sitemap.xml'e 301 yönlendir
+      {
+        source: "/wp-sitemap.xml",
+        destination: "/sitemap.xml",
+        statusCode: 301,
+      },
+      {
+        source: "/sitemap:page(\\d+)\\.xml",
+        destination: "/sitemap.xml",
+        statusCode: 301,
+      },
+      {
+        source: "/sitemap_index.xml",
+        destination: "/sitemap.xml",
+        statusCode: 301,
+      },
+      {
+        source: "/product-sitemap:page(\\d+)\\.xml",
+        destination: "/sitemap.xml",
+        statusCode: 301,
+      },
+      {
+        source: "/product_cat-sitemap.xml",
+        destination: "/sitemap.xml",
+        statusCode: 301,
+      },
       // Kategori slug bağlaç temizliği redirect'leri (SEO için 301)
       {
         source: "/fetis-ve-fantezi",
