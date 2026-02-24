@@ -47,8 +47,11 @@ const RESERVED_SLUGS = [
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (RESERVED_SLUGS.includes(slug)) {
+    return {};
+  }
+
   const institutionalContentItem = institutionalContent[slug as keyof typeof institutionalContent];
-  
   if (institutionalContentItem) {
     return {
       title: institutionalContentItem.title,
@@ -62,22 +65,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  return {
-    title: "Sayfa Bulunamadı",
-  };
+  return {};
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const params_obj = await searchParams;
 
   // Check if slug is reserved
   if (RESERVED_SLUGS.includes(slug)) {
     notFound();
   }
 
+  const category = await getCategoryBySlug(slug);
+
   // Önce institutional content kontrolü yap
   const institutionalContentItem = institutionalContent[slug as keyof typeof institutionalContent];
+  if (!category && !institutionalContentItem) {
+    notFound();
+  }
+
   if (institutionalContentItem) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -90,11 +96,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     );
   }
 
-  const category = await getCategoryBySlug(slug);
-
-  if (!category) {
-    notFound();
-  }
+  const params_obj = await searchParams;
 
   // Search params'ı parse et
   const sortParam = params_obj.sort;
@@ -258,4 +260,3 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     </>
   );
 }
-
