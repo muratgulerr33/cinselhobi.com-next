@@ -112,3 +112,7 @@ seo_exports/nextjs/v1/*
 
 # local test artifacts
 test-results/
+
+# Lighthouse reports (local only)
+lh/
+lh2/
