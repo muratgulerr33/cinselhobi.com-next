@@ -191,6 +191,8 @@ docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(
 
 **Canonical politika:** Tek domain kullanılır; tüm trafik `https://www.cinselhobi.com` üzerinden sunulur. Production’da `cinselhobi.com` (www olmadan) veya diğer host’lara gelen istekler 308 ile `https://www.cinselhobi.com` aynı path/query’e yönlendirilir (middleware). Localhost / 127.0.0.1 yönlendirilmez.
 
+**2026-03-15 prod reality note:** Current public/canonical prod URL `https://www.cinselhobi.com` olarak kullanılmalıdır. Observed PM2 runtime env on 2026-03-15 still showed non-www `AUTH_URL`/`NEXTAUTH_URL`; docs standard canonical should be www.
+
 - **Canonical base:** `src/lib/seo/canonical.ts` → `getCanonicalBaseUrl()`. Öncelik: `SITE_URL` (prod’da `https://www.cinselhobi.com` olmalı), yoksa aynı değer sabit. Host her zaman `www.cinselhobi.com` olacak şekilde normalize edilir.
 - **Sitemap:** `/sitemap.xml` — Ana sayfa, `/urun/[slug]`, `/[slug]` (kategori); canonical base ile absolute URL’ler; revalidate 3600s.
 - **Robots:** `/robots.txt` — Allow `/`, Disallow `/admin/`, `/api/`, `/dashboard/`, `/_next/`, `/account/`; `sitemap` canonical base ile.
@@ -205,6 +207,7 @@ docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(
 
 - `curl -I https://cinselhobi.com/urun/...` → `308` ve `Location: https://www.cinselhobi.com/urun/...` beklenir.
 - `curl -I https://www.cinselhobi.com/sitemap.xml` → `200` beklenir.
+- Deploy/ops runbook current prod için `docs/04-deploy-kamatera-pm2.md` içindeki `/var/www/cinselhobi/app`, `cinselhobi-next`, `PORT=3000` gerçekleriyle okunmalıdır.
 
 ## GA4 doğrulama (production)
 
@@ -219,4 +222,3 @@ Deploy sonrası kontrol:
 - Drizzle ORM kullanılmaktadır. Prisma kullanılmamaktadır.
 - TypeScript için `pg` modülü tipleri `@types/pg` devDependency olarak eklenmiştir.
 - Snapshot dosyaları `data/snapshots/` klasöründe saklanır ve `.gitignore`'a eklenmiştir (büyük olabilir ve gizli veri içerebilir).
-
