@@ -9,7 +9,7 @@
 
 ## Gereksinimler
 
-- Node.js LTS (18 veya üzeri)
+- Node.js
 - Docker ve Docker Compose
 - npm veya yarn
 
@@ -80,9 +80,6 @@ touch .env.local
    - `DATABASE_URL`: Veritabanı bağlantı string'i (zorunlu - Drizzle migrate için gereklidir)
      - Örnek format: `postgresql://kullanici:sifre@localhost:5432/veritabani_adi`
      - Docker Compose ile çalışıyorsanız: `postgresql://postgres:postgres@localhost:5432/cinselhobi`
-   - `WOO_BASE_URL`: WooCommerce sitenizin URL'i
-   - `WOO_CONSUMER_KEY`: WooCommerce Consumer Key
-   - `WOO_CONSUMER_SECRET`: WooCommerce Consumer Secret
    - `NEXT_PUBLIC_GA_MEASUREMENT_ID`: (isteğe bağlı) GA4 ölçüm kimliği, örn. `G-3JQ79MBRNB`. Sadece production build'de kullanılır; local/dev'de GA yüklenmez.
 
 **Not:** `npm run db:migrate` komutunu çalıştırmadan önce `DATABASE_URL` değişkeninin `.env.local` veya `.env` dosyasında tanımlı olduğundan emin olun.
@@ -114,84 +111,13 @@ Container loglarını kontrol edin:
 docker compose logs postgres
 ```
 
-## WooCommerce Import
-
-### WooCommerce API Key Oluşturma
-
-WooCommerce REST API key'lerini oluşturmak için:
-
-1. WordPress admin paneline giriş yapın
-2. **WooCommerce** → **Settings** → **Advanced** → **REST API** bölümüne gidin
-3. **Add key** butonuna tıklayın
-4. Key için bir açıklama girin (örn: "Import Script")
-5. **Read** yetkisini seçin
-6. **Generate API key** butonuna tıklayın
-7. Oluşturulan **Consumer Key** ve **Consumer Secret** değerlerini kopyalayın
-
-### Import İşlemi
-
-WooCommerce verilerini çekmek ve veritabanına aktarmak için:
-
-1. `.env.local` dosyasına aşağıdaki değerleri ekleyin (DATABASE_URL zaten mevcut olmalı):
-
-```env
-WOO_BASE_URL="https://cinselhobi.com"
-WOO_CONSUMER_KEY="ck_..."
-WOO_CONSUMER_SECRET="cs_..."
-```
-
-2. Docker container'ını başlatın (eğer çalışmıyorsa):
-
-```bash
-docker compose up -d
-```
-
-3. Import script'ini çalıştırın:
-
-**Full Import (tüm ürünler - varsayılan):**
-```bash
-npm run woo:import
-```
-
-veya açıkça belirtmek için:
-```bash
-WOO_IMPORT_MODE=full npm run woo:import
-```
-
-**Sample Import (sadece ilk N ürün - geliştirme/test için):**
-```bash
-WOO_IMPORT_MODE=sample WOO_IMPORT_LIMIT=20 npm run woo:import
-```
-
-Script şunları yapacaktır:
-- WooCommerce API'den kategorileri ve ürünleri çeker
-- `data/snapshots/<mode>/` klasörüne JSON snapshot'ları kaydeder (`full` veya `sample`)
-- Veritabanına idempotent şekilde yazar (upsert)
-
-**Notlar:**
-- Varsayılan olarak sadece yayında olan ürünler (`status=publish`) import edilir. Tüm ürünleri (draft, pending, private vb.) import etmek için `.env.local` dosyasına `WOO_PRODUCT_STATUS=any` ekleyebilirsiniz.
-- Sample mod geliştirme ve test için kullanılır. Canlı WooCommerce'e dokunmadan küçük bir veri seti ile çalışmanızı sağlar.
-- Kategoriler her zaman tam olarak çekilir (az sayıda oldukları için).
-- `woo:import` scripti ortam değişkenlerini önce `.env.local`, sonra `.env` dosyasından okur.
-- Eğer 401 (Unauthorized) hatası alırsanız, `.env.local` dosyasına `WOO_AUTH_MODE=query` ekleyip tekrar deneyin. Bu durumda authentication query parametreleri ile yapılır (Basic Auth header yerine).
-
-### Import Sonrası Kontrol
-
-Import işlemi tamamlandıktan sonra veritabanındaki kayıt sayılarını kontrol edebilirsiniz:
-
-```bash
-# Ürün sayısı
-docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(*) from products;"
-
-# Kategori sayısı
-docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(*) from categories;"
-```
+**Historical note:** İlk veri bootstrap aşamasında eski bir tek seferlik import yolu kullanıldı. Current sistemin aktif setup, deploy veya runtime bağımlılığı bu akışa bağlı değildir.
 
 ## Canonical domain (www) ve Sitemap / Robots
 
 **Canonical politika:** Tek domain kullanılır; tüm trafik `https://www.cinselhobi.com` üzerinden sunulur. Production’da `cinselhobi.com` (www olmadan) veya diğer host’lara gelen istekler 308 ile `https://www.cinselhobi.com` aynı path/query’e yönlendirilir (middleware). Localhost / 127.0.0.1 yönlendirilmez.
 
-**2026-03-15 prod reality note:** Current public/canonical prod URL `https://www.cinselhobi.com` olarak kullanılmalıdır. Observed PM2 runtime env on 2026-03-15 still showed non-www `AUTH_URL`/`NEXTAUTH_URL`; docs standard canonical should be www.
+**2026-03-15 prod reality note:** Current public/canonical prod URL `https://www.cinselhobi.com` olarak kullanılmalıdır. Current prod altyapısı Hetzner üzerinde çalışan self-hosted Linux VPS'tir; app directory `/var/www/cinselhobi/app`, PM2 process `cinselhobi-next`, app port `3000` olarak doğrulanmıştır. Current git remote `github-cinselhobi:muratgulerr33/cinselhobi.com-next.git`; `github-cinselhobi` alias ve doğru deploy key ile `git pull origin main` çalışmaktadır. Observed PM2 runtime env on 2026-03-15 still showed non-www `AUTH_URL`/`NEXTAUTH_URL`; docs standard canonical should be www.
 
 - **Canonical base:** `src/lib/seo/canonical.ts` → `getCanonicalBaseUrl()`. Öncelik: `SITE_URL` (prod’da `https://www.cinselhobi.com` olmalı), yoksa aynı değer sabit. Host her zaman `www.cinselhobi.com` olacak şekilde normalize edilir.
 - **Sitemap:** `/sitemap.xml` — Ana sayfa, `/urun/[slug]`, `/[slug]` (kategori); canonical base ile absolute URL’ler; revalidate 3600s.
@@ -207,7 +133,7 @@ docker exec -it cinselhobi_db psql -U cinselhobi -d cinselhobi -c "select count(
 
 - `curl -I https://cinselhobi.com/urun/...` → `308` ve `Location: https://www.cinselhobi.com/urun/...` beklenir.
 - `curl -I https://www.cinselhobi.com/sitemap.xml` → `200` beklenir.
-- Deploy/ops runbook current prod için `docs/04-deploy-kamatera-pm2.md` içindeki `/var/www/cinselhobi/app`, `cinselhobi-next`, `PORT=3000` gerçekleriyle okunmalıdır.
+- Deploy/ops runbook current prod için `docs/04-deploy-prod-pm2.md` içindeki Hetzner self-hosted VPS, `/var/www/cinselhobi/app`, `cinselhobi-next`, `PORT=3000` ve çalışan `github-cinselhobi` alias gerçekleriyle okunmalıdır.
 
 ## GA4 doğrulama (production)
 

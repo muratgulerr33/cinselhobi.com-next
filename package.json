@@ -13,7 +13,6 @@
     "db:migrate": "drizzle-kit migrate",
     "db:check": "bash scripts/db/db_check.sh",
     "db:psql": "bash -lc 'source scripts/dev/load_env.sh && psql \"$DATABASE_URL\"'",
-    "woo:import": "node --import tsx scripts/woo-import.ts",
     "categories:report": "node --import tsx scripts/category-detective-report.ts",
     "categories:hub-todo": "node --import tsx scripts/export-toplevel-hub-todo.ts",
     "products:smart-detective": "node --import tsx scripts/smart-products-detective.ts",
