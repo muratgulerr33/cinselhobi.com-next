@@ -7,6 +7,54 @@
 - **SEO export:** `npm run export:seo:v1` — Katalog + kategori istatistiği export eder.
 - **Çıktı klasörü:** `seo_exports/nextjs/v1/` (category-stats.json, category-columns.json, katalog dosyaları).
 
+## Production deploy (current truth)
+
+Current prod deploy script: `scripts/deploy-prod.sh`
+
+Sunucuda önerilen çalıştırma komutu:
+
+```bash
+cd /var/www/cinselhobi/app
+./scripts/deploy-prod.sh
+```
+
+Dry-run ile güvenli ön kontrol:
+
+```bash
+cd /var/www/cinselhobi/app
+./scripts/deploy-prod.sh --dry-run
+```
+
+Bu script current prod truth ile uyumludur ve şu sabitleri kullanır:
+
+- **Provider / model:** Hetzner self-hosted Linux VPS
+- **App path:** `/var/www/cinselhobi/app`
+- **PM2 process:** `cinselhobi-next`
+- **Branch:** `main`
+- **Port:** `3000`
+- **Canonical domain:** `https://www.cinselhobi.com`
+
+Script ne yapar:
+
+1. Çalıştırılabilir komutları (`git`, `npm`, `pm2`, opsiyonel olarak `curl`) doğrular.
+2. `package.json`, git working tree ve aktif branch'in `main` olduğunu doğrular.
+3. Dirty working tree varsa deploy'u durdurur (gerekirse `--allow-dirty` ile bilinçli override edilebilir).
+4. `git status -sb` ve `git rev-parse HEAD` ile mevcut durumu loglar.
+5. `git pull origin main` çalıştırır.
+6. `npm ci` çalıştırır.
+7. `npm run build` çalıştırır.
+8. **Sadece build başarılıysa** `pm2 restart cinselhobi-next` çalıştırır.
+9. `pm2 list` ve `pm2 logs cinselhobi-next --lines 200 --nostream` ile kontrollü doğrulama yapar.
+10. `curl` ile `http://127.0.0.1:3000/` ve `https://www.cinselhobi.com/` için HTTP smoke check dener.
+
+**Kritik güvenlik davranışı:** `npm run build` fail verirse script `pm2 restart` çalıştırmaz, net hata mesajı verir ve non-zero exit ile deploy'u başarısız bitirir.
+
+Notlar:
+
+- Script sonsuz log tail yapmaz; `pm2 logs ... --nostream` kullanır.
+- Script current prod truth dışındaki legacy provider / eski import akışı / Woo bootstrap bilgilerini deploy akışına taşımaz.
+- README ve operasyon anlatımı current truth olarak Hetzner + `/var/www/cinselhobi/app` + `cinselhobi-next` + `main` üzerinden okunmalıdır.
+
 ## Gereksinimler
 
 - Node.js
