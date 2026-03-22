@@ -5,7 +5,18 @@ import { useHeaderContext } from "@/components/layout/header-context";
 import { useMemo } from "react";
 import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
 
-export function ActiveFiltersBar() {
+interface ChildCategory {
+  id: number;
+  wcId: number;
+  name: string;
+  slug: string;
+}
+
+interface ActiveFiltersBarProps {
+  childCategories?: ChildCategory[];
+}
+
+export function ActiveFiltersBar({ childCategories }: ActiveFiltersBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,16 +33,19 @@ export function ActiveFiltersBar() {
   const max = searchParams.get("max");
   const inStock = searchParams.get("inStock");
   const sub = searchParams.get("sub");
+  const resolvedChildCategories = useMemo(
+    () => childCategories ?? categoryInfo?.childCategories ?? [],
+    [childCategories, categoryInfo?.childCategories]
+  );
 
   // childCategories'dan wcId->name map oluştur
   const wcIdToNameMap = useMemo(() => {
-    if (!categoryInfo?.childCategories) return new Map<number, string>();
     const map = new Map<number, string>();
-    categoryInfo.childCategories.forEach((cat) => {
+    resolvedChildCategories.forEach((cat) => {
       map.set(cat.wcId, cat.name);
     });
     return map;
-  }, [categoryInfo]);
+  }, [resolvedChildCategories]);
 
   // Aktif filtreleri topla
   const activeFilters = useMemo(() => {
@@ -176,4 +190,3 @@ export function ActiveFiltersBar() {
     </div>
   );
 }
-

@@ -7,7 +7,17 @@ import type { CatalogParamsFromUrl } from "@/components/layout/header-context";
 
 const validSorts = ["newest", "price_asc", "price_desc", "name_asc"];
 
-function parseCatalogParamsFromSearchParams(searchParams: URLSearchParams): CatalogParamsFromUrl {
+interface ChildCategory {
+  id: number;
+  wcId: number;
+  name: string;
+  slug: string;
+}
+
+function parseCatalogParamsFromSearchParams(
+  searchParams: URLSearchParams,
+  childCategories: ChildCategory[] = []
+): CatalogParamsFromUrl {
   const sortParam = searchParams.get("sort");
   const sort =
     sortParam && validSorts.includes(sortParam)
@@ -32,9 +42,23 @@ function parseCatalogParamsFromSearchParams(searchParams: URLSearchParams): Cata
   const inStock =
     inStockParam === "1" || inStockParam === "true" ? true : inStockParam === "0" || inStockParam === "false" ? false : null;
 
-  const subCategoryIdsParam = searchParams.get("subCategoryIds");
   let subCategoryIds: number[] | null = null;
-  if (subCategoryIdsParam) {
+  const subParam = searchParams.get("sub");
+  if (subParam) {
+    const wcIdToInternalIdMap = new Map(childCategories.map((category) => [category.wcId, category.id]));
+    const ids = subParam
+      .split(",")
+      .map((wcId) => {
+        const parsed = Number(wcId.trim());
+        if (Number.isNaN(parsed)) return null;
+        return wcIdToInternalIdMap.get(parsed) ?? null;
+      })
+      .filter((id): id is number => id !== null);
+    if (ids.length > 0) subCategoryIds = ids;
+  }
+
+  const subCategoryIdsParam = searchParams.get("subCategoryIds");
+  if (subCategoryIds === null && subCategoryIdsParam) {
     const ids = subCategoryIdsParam
       .split(",")
       .map((id) => {
@@ -52,13 +76,13 @@ function parseCatalogParamsFromSearchParams(searchParams: URLSearchParams): Cata
  * Rendered only on category ([slug]) page. Syncs URL search params to header context
  * so the header can show CatalogControls without using useSearchParams in the root layout.
  */
-export function CategoryCatalogParamsSync() {
+export function CategoryCatalogParamsSync({ childCategories = [] }: { childCategories?: ChildCategory[] }) {
   const searchParams = useSearchParams();
   const { setCatalogParams } = useHeaderContext();
 
   useEffect(() => {
-    setCatalogParams(parseCatalogParamsFromSearchParams(searchParams));
-  }, [searchParams, setCatalogParams]);
+    setCatalogParams(parseCatalogParamsFromSearchParams(searchParams, childCategories));
+  }, [searchParams, setCatalogParams, childCategories]);
 
   return null;
 }

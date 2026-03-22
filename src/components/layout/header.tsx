@@ -65,8 +65,17 @@ export function HeaderContent() {
   const showTitle = mounted && Boolean(title);
   const effectiveTitle = showTitle ? title : null;
   const headerText = effectiveTitle ?? HEADER_BRAND_TITLE;
-
+  const categorySlug = isCategoryPage ? pathname.split("/").filter(Boolean)[0] ?? "" : "";
   const { sort, minPrice, maxPrice, inStock, subCategoryIds } = catalogParams;
+  const controlsKey = [
+    categorySlug,
+    categoryInfo?.childKey ?? "",
+    sort,
+    minPrice ?? "",
+    maxPrice ?? "",
+    inStock ?? "",
+    JSON.stringify(subCategoryIds ?? []),
+  ].join("|");
 
   useEffect(() => {
     const rafId = requestAnimationFrame(() => {
@@ -182,10 +191,11 @@ export function HeaderContent() {
 
           {/* Sağ */}
           <div className="flex items-center justify-end gap-2 flex-shrink-0">
-            {isCategoryPage && categoryInfo ? (
+            {isCategoryPage ? (
               <CatalogControls
-                categorySlug={categoryInfo.slug}
-                childCategories={categoryInfo.childCategories}
+                key={controlsKey}
+                categorySlug={categorySlug}
+                childCategories={categoryInfo?.childCategories}
                 initialSort={sort}
                 initialMinPrice={minPrice}
                 initialMaxPrice={maxPrice}

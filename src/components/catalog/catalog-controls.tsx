@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import {
@@ -57,6 +57,7 @@ export function CatalogControls({
   const searchParams = useSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("filter");
+  const [mounted, setMounted] = useState(false);
 
   // Form state
   const [sort, setSort] = useState<SortOption>(initialSort);
@@ -74,6 +75,13 @@ export function CatalogControls({
     inStock,
     selectedSubCategories.length > 0,
   ].filter(Boolean).length;
+
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   const openDrawer = (tab: TabType) => {
     setActiveTab(tab);
@@ -147,8 +155,6 @@ export function CatalogControls({
     setInStock(false);
     setSelectedSubCategories([]);
     setSort("newest");
-    
-    const params = new URLSearchParams();
     router.push(`/${categorySlug}`);
     setDrawerOpen(false);
   };
@@ -184,7 +190,7 @@ export function CatalogControls({
           className="relative grid h-11 w-11 place-items-center rounded-xl border border-border bg-card/50 transition-all hover:bg-accent active:scale-[0.98]"
         >
           <SlidersHorizontal className="h-5 w-5" />
-          {activeFilterCount > 0 && (
+          {mounted && activeFilterCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
               {activeFilterCount}
             </span>
@@ -356,4 +362,3 @@ export function CatalogControls({
     </>
   );
 }
-

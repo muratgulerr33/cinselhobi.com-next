@@ -16,7 +16,7 @@ import type { IntentClass } from "@/lib/intent-heuristics";
 import { PRODUCTS_PER_PAGE } from "@/config/catalog";
 import { db } from "@/db/connection";
 import { categories } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { institutionalContent } from "@/data/institutional-content";
 import type { Metadata } from "next";
 import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
@@ -228,7 +228,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         childCategories={childCategories}
       />
       <Suspense fallback={null}>
-        <CategoryCatalogParamsSync />
+        <CategoryCatalogParamsSync childCategories={childCategories} />
       </Suspense>
       <div className="space-y-6">
         <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground">
@@ -241,7 +241,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-foreground">Ürünler</h2>
           <IntentFilterChips categorySlug={slug} products={initialProducts} />
-          <ActiveFiltersBar />
+          <ActiveFiltersBar childCategories={childCategories} />
           <LoadMoreGrid
             key={`${slug}|${sort}|${minPriceParam ?? ""}|${maxPriceParam ?? ""}|${inStockParam ?? ""}|${subParam ?? ""}|${intent}`}
             initialProducts={initialProducts}
