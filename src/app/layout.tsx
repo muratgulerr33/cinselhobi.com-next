@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { getCanonicalBaseUrl } from "@/lib/seo/canonical";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { GA4PageViews } from "@/components/analytics/GA4PageViews";
+import { TawkWidgetBoot } from "@/components/integrations/tawk/tawk-widget-boot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -155,6 +156,7 @@ export default function RootLayout({
                 <HeaderProvider>
                   <SearchProvider>
                     <AppRouteChrome>{children}</AppRouteChrome>
+                    <TawkWidgetBoot />
                     <Toaster position="top-center" richColors />
                   </SearchProvider>
                 </HeaderProvider>

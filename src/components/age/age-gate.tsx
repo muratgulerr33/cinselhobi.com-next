@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Info } from "lucide-react";
 import { useIsHydrated } from "@/hooks/use-is-hydrated";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 const MOBILE_BREAKPOINT = 640; // sm: <=640px → Drawer, >640px → Dialog
 
@@ -110,6 +114,15 @@ export function AgeGate() {
     }, 100);
     return () => clearTimeout(t);
   }, [resolved, open]);
+
+  useEffect(() => {
+    const shouldSuppress = hydrated && resolved && open;
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.ageGate, shouldSuppress);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.ageGate, false);
+    };
+  }, [hydrated, open, resolved]);
 
   if (!hydrated || !resolved || !open) return null;
 

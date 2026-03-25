@@ -18,6 +18,10 @@ import {
 import { CartView } from "@/components/cart/cart-view";
 import { MOBILE_TABS, getActiveTabId, type MobileTabId } from "./mobile-tabs";
 import { saveTabScroll, setTabNavIntent } from "./tab-scroll";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 interface MobileBottomNavProps {
   user?: { name?: string | null; imageUrl?: string | null } | null;
@@ -129,6 +133,14 @@ export function MobileBottomNav({
       }
     };
   }, []);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.mobileCartDrawer, cartOpen);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.mobileCartDrawer, false);
+    };
+  }, [cartOpen]);
   
   // Product detail sayfalarında bottom nav gizle
   if (pathname?.startsWith("/urun/")) {

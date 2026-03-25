@@ -15,11 +15,15 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { saveCheckoutAddressIntent } from "@/lib/checkout-address-intent";
 import { toast } from "sonner";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 const addressSchema = z.object({
   title: z.string().min(1, "Başlık gereklidir").max(100, "Başlık çok uzun"),
@@ -55,11 +59,17 @@ interface AddressFormProps {
 
 export function AddressForm({ open, onOpenChange, mode = "account", onCreated }: AddressFormProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.accountAddressDrawer, open);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.accountAddressDrawer, false);
+    };
+  }, [open]);
 
   const {
     register,
@@ -257,4 +267,3 @@ export function AddressForm({ open, onOpenChange, mode = "account", onCreated }:
     </Drawer>
   );
 }
-

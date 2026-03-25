@@ -12,6 +12,10 @@ import { SearchResultItem } from "./search-result-item";
 import { POPULAR_QUERIES } from "@/lib/search/popular";
 import { useVoiceSearch } from "@/hooks/use-voice-search";
 import { useIsHydrated } from "@/hooks/use-is-hydrated";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 const RECENT_SEARCHES_KEY = "ch_recent_searches";
 const MAX_RECENT_SEARCHES = 8;
@@ -93,6 +97,14 @@ export function SearchOverlay() {
     }
     setRecentSearches(getRecentSearches());
   }, [open, hydrated]);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.searchOverlay, open);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.searchOverlay, false);
+    };
+  }, [open]);
 
   // VisualViewport fallback (Android/iOS keyboard animasyonu)
   useEffect(() => {

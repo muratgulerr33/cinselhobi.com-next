@@ -23,6 +23,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 interface Address {
   id: number;
@@ -74,6 +78,22 @@ export default function CheckoutPage() {
       setPaytrConfigured(result.configured);
     });
   }, []);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.checkoutThreeDS, showThreeDSModal);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.checkoutThreeDS, false);
+    };
+  }, [showThreeDSModal]);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.checkoutPayTR, showPayTRModal);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.checkoutPayTR, false);
+    };
+  }, [showPayTRModal]);
 
   // loadAddresses fonksiyonunu useCallback ile memoize et
   const loadAddresses = useCallback(async () => {
@@ -735,4 +755,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

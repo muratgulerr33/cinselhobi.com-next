@@ -15,6 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { normalizeCategoryName } from "@/lib/format/normalize-category-name";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 type SortOption = "newest" | "price_asc" | "price_desc" | "name_asc";
 
@@ -82,6 +86,14 @@ export function CatalogControls({
     });
     return () => cancelAnimationFrame(rafId);
   }, []);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.catalogControls, drawerOpen);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.catalogControls, false);
+    };
+  }, [drawerOpen]);
 
   const openDrawer = (tab: TabType) => {
     setActiveTab(tab);

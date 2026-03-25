@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
 import { buildHubCardHref } from "@/config/hub-ui";
 import type { CategoryBubble } from "./category-bubble-rail";
+import {
+  setTawkSuppressed,
+  TAWK_SUPPRESSION_SOURCES,
+} from "@/components/integrations/tawk/tawk-visibility";
 
 type ProductImage = string | { src: string; alt?: string };
 
@@ -90,6 +94,14 @@ export function CategoryQuickLookSheet({
       cancelled = true;
     };
   }, [open, category]);
+
+  useEffect(() => {
+    setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.hubQuickLook, open);
+
+    return () => {
+      setTawkSuppressed(TAWK_SUPPRESSION_SOURCES.hubQuickLook, false);
+    };
+  }, [open]);
 
   const viewAllHref = category
     ? buildHubCardHref(category.parentSlug, category.childWcId)
